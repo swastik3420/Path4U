@@ -281,11 +281,19 @@ const ResumeUpload = ({ onFileUploaded, onStartAssessment, onResumeAnalyzed }: R
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mt-6 text-center"
+              className="mt-6 text-center space-y-3"
             >
-              <Button variant="hero" size="lg" onClick={onStartAssessment}>
-                Start Skill Assessment
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button variant="hero" size="lg" onClick={() => onStartAssessment("full")}>
+                  Start Full Assessment (30 Q)
+                </Button>
+                <Button variant="outline" size="lg" onClick={() => onStartAssessment("demo")}>
+                  Try Demo Mode (5 Q)
+                </Button>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Demo mode is a quick 5-question preview. Full assessment gives accurate skill scoring.
+              </p>
             </motion.div>
           )}
         </motion.div>
