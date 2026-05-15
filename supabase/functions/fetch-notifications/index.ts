@@ -39,7 +39,7 @@ Today's date is ${today}. Make timestamps relative to today.
 Return ONLY the JSON array, no markdown.`;
 
     const response = await fetch(
-      "https://api.lovable.dev/v1/chat/completions",
+      "https://ai.gateway.lovable.dev/v1/chat/completions",
       {
         method: "POST",
         headers: {
