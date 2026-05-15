@@ -64,11 +64,12 @@ export async function parseResume(resumeText: string): Promise<ApiResponse<Parse
  */
 export async function generateQuestions(
   skills: ParsedSkill[],
-  experienceLevel: string
+  experienceLevel: string,
+  count?: number
 ): Promise<ApiResponse<Question[]>> {
   try {
     const { data, error } = await supabase.functions.invoke('generate-questions', {
-      body: { skills, experienceLevel }
+      body: { skills, experienceLevel, count }
     });
 
     if (error) {
@@ -92,27 +93,77 @@ export async function generateQuestions(
  */
 export async function extractTextFromPdf(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
-  
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+
+  const pdf = await pdfjsLib.getDocument({
+    data: arrayBuffer,
+    useSystemFonts: true,
+    disableFontFace: true,
+  }).promise;
+
   const numPages = pdf.numPages;
-  const textParts: string[] = [];
+  const pageTexts: string[] = [];
 
   for (let i = 1; i <= numPages; i++) {
     const page = await pdf.getPage(i);
     const textContent = await page.getTextContent();
-    const pageText = textContent.items
-      .map((item: any) => item.str)
-      .join(' ');
-    textParts.push(pageText);
+
+    // Reconstruct text using item positions so spacing/newlines are preserved
+    let pageText = '';
+    let lastY: number | null = null;
+    let lastEndX: number | null = null;
+    let lastHeight = 0;
+
+    for (const item of textContent.items as any[]) {
+      const str: string = item.str ?? '';
+      if (!str && !item.hasEOL) continue;
+
+      const tx = item.transform || [1, 0, 0, 1, 0, 0];
+      const x = tx[4];
+      const y = tx[5];
+      const width = item.width ?? 0;
+      const height = item.height ?? Math.abs(tx[3]) ?? 10;
+
+      if (lastY !== null) {
+        const yDelta = Math.abs(y - lastY);
+        if (yDelta > Math.max(2, lastHeight * 0.6)) {
+          // New visual line
+          pageText += yDelta > lastHeight * 1.8 ? '\n\n' : '\n';
+          lastEndX = null;
+        } else if (lastEndX !== null && x - lastEndX > Math.max(1, height * 0.25)) {
+          if (!pageText.endsWith(' ') && !pageText.endsWith('\n')) pageText += ' ';
+        }
+      }
+
+      pageText += str;
+      if (item.hasEOL) {
+        pageText += '\n';
+        lastEndX = null;
+      } else {
+        lastEndX = x + width;
+      }
+      lastY = y;
+      lastHeight = height || lastHeight;
+    }
+
+    // Cleanup: collapse spaces, normalize newlines
+    pageText = pageText
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .replace(/[ \t]{2,}/g, ' ')
+      .trim();
+
+    if (pageText) pageTexts.push(pageText);
   }
 
-  const fullText = textParts.join('\n\n').trim();
-  
+  const fullText = pageTexts.join('\n\n').trim();
+
   if (fullText.length < 30) {
-    throw new Error('Could not extract text from this PDF. It may be image-based or encrypted. Try a different file or paste your resume text.');
+    throw new Error(
+      'Could not extract text from this PDF. It may be a scanned/image-based PDF or encrypted. Please try a text-based PDF, or upload your resume as .txt or .md.'
+    );
   }
 
-  console.log(`Extracted ${fullText.length} characters from ${numPages} pages`);
+  console.log(`Extracted ${fullText.length} characters from ${numPages} page(s)`);
   return fullText;
 }
 

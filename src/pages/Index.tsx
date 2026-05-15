@@ -23,6 +23,7 @@ const Index = () => {
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
   const [assessmentResults, setAssessmentResults] = useState<SkillResult[]>([]);
   const [parsedResume, setParsedResume] = useState<ParsedResume | null>(null);
+  const [assessmentMode, setAssessmentMode] = useState<"demo" | "full">("full");
 
   const handleGetStarted = () => {
     setAppState("upload");
@@ -40,7 +41,8 @@ const Index = () => {
     setParsedResume(data);
   };
 
-  const handleStartAssessment = () => {
+  const handleStartAssessment = (mode: "demo" | "full" = "full") => {
+    setAssessmentMode(mode);
     setAppState("assessment");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -83,6 +85,7 @@ const Index = () => {
         <SkillAssessment 
           onComplete={handleAssessmentComplete}
           parsedResume={parsedResume}
+          questionCount={assessmentMode === "demo" ? 5 : 30}
         />
       )}
 

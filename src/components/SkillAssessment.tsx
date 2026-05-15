@@ -9,9 +9,10 @@ import { useToast } from "@/components/ui/use-toast";
 interface SkillAssessmentProps {
   onComplete: (results: { skill: string; score: number; level: string }[]) => void;
   parsedResume: ParsedResume;
+  questionCount?: number;
 }
 
-const SkillAssessment = ({ onComplete, parsedResume }: SkillAssessmentProps) => {
+const SkillAssessment = ({ onComplete, parsedResume, questionCount }: SkillAssessmentProps) => {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -31,7 +32,7 @@ const SkillAssessment = ({ onComplete, parsedResume }: SkillAssessmentProps) => 
 
     try {
       console.log('Generating questions for skills:', parsedResume.skills);
-      const result = await generateQuestions(parsedResume.skills, parsedResume.experienceLevel);
+      const result = await generateQuestions(parsedResume.skills, parsedResume.experienceLevel, questionCount);
 
       if (!result.success || !result.data) {
         throw new Error(result.error || 'Failed to generate questions');
