@@ -85,6 +85,7 @@ const Index = () => {
         <SkillAssessment 
           onComplete={handleAssessmentComplete}
           parsedResume={parsedResume}
+          questionCount={assessmentMode === "demo" ? 5 : 30}
         />
       )}
 
