@@ -32,7 +32,7 @@ const SkillAssessment = ({ onComplete, parsedResume, questionCount }: SkillAsses
 
     try {
       console.log('Generating questions for skills:', parsedResume.skills);
-      const result = await generateQuestions(parsedResume.skills, parsedResume.experienceLevel);
+      const result = await generateQuestions(parsedResume.skills, parsedResume.experienceLevel, questionCount);
 
       if (!result.success || !result.data) {
         throw new Error(result.error || 'Failed to generate questions');
