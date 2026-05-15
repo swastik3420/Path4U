@@ -11,7 +11,11 @@ serve(async (req) => {
   }
 
   try {
-    const { skills, experienceLevel } = await req.json();
+    const { skills, experienceLevel, count } = await req.json();
+    const totalQuestions = Math.max(3, Math.min(30, Number(count) || 30));
+    const basicCount = Math.ceil(totalQuestions / 3);
+    const intermediateCount = Math.ceil(totalQuestions / 3);
+    const advancedCount = totalQuestions - basicCount - intermediateCount;
 
     if (!skills || !Array.isArray(skills) || skills.length === 0) {
       return new Response(
