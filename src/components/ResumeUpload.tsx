@@ -7,7 +7,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 interface ResumeUploadProps {
   onFileUploaded: (file: File) => void;
-  onStartAssessment: () => void;
+  onStartAssessment: (mode: "demo" | "full") => void;
   onResumeAnalyzed?: (data: ParsedResume) => void;
 }
 
