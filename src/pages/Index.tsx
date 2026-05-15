@@ -41,7 +41,8 @@ const Index = () => {
     setParsedResume(data);
   };
 
-  const handleStartAssessment = () => {
+  const handleStartAssessment = (mode: "demo" | "full" = "full") => {
+    setAssessmentMode(mode);
     setAppState("assessment");
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
