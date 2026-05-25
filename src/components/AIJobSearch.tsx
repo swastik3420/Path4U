@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { isSafeUrl } from "@/lib/safeUrl";
 import { motion } from "framer-motion";
 import { Briefcase, MapPin, Clock, ExternalLink, Loader2, RefreshCw, Filter, DollarSign, Send, CheckCircle2, Building2 } from "lucide-react";
 import { Button } from "@/components/ui/button";

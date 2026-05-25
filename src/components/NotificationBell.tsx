@@ -91,7 +91,7 @@ const NotificationBell = () => {
                   <div
                     key={item.id}
                     className="px-4 py-3 hover:bg-muted/50 transition-colors cursor-pointer"
-                    onClick={() => item.url && window.open(item.url, "_blank")}
+                    onClick={() => isSafeUrl(item.url) && window.open(item.url, "_blank", "noopener,noreferrer")}
                   >
                     <div className="flex items-start gap-3">
                       <div className={`p-1.5 rounded-lg shrink-0 mt-0.5 ${
