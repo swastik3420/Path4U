@@ -313,13 +313,18 @@ const AIJobSearch = ({ results, parsedResume }: AIJobSearchProps) => {
                         )}
                       </Button>
                     )
-                  ) : (
+                  ) : isSafeUrl(job.url) ? (
                     <a href={job.url} target="_blank" rel="noopener noreferrer" className="w-full">
                       <Button variant="outline" size="sm" className="w-full">
                         <ExternalLink className="w-3.5 h-3.5 mr-1" />
                         View on {job.source}
                       </Button>
                     </a>
+                  ) : (
+                    <Button variant="outline" size="sm" className="w-full" disabled>
+                      <ExternalLink className="w-3.5 h-3.5 mr-1" />
+                      Link unavailable
+                    </Button>
                   )}
                 </div>
               </motion.div>

@@ -20,6 +20,14 @@ serve(async (req) => {
       );
     }
 
+    const MAX_RESUME_CHARS = 50000;
+    if (resumeText.length > MAX_RESUME_CHARS) {
+      return new Response(
+        JSON.stringify({ error: `Resume text too long (max ${MAX_RESUME_CHARS} characters)` }),
+        { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     console.log('Parsing resume, text length:', resumeText.length);
 
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
