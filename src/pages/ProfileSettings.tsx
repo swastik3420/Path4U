@@ -196,8 +196,8 @@ const ProfileSettings = () => {
           toast({ title: "Upload failed", description: uploadErr.message, variant: "destructive" });
           return;
         }
-        const { data: { publicUrl } } = supabase.storage.from("certificates").getPublicUrl(path);
-        fileUrl = publicUrl;
+        // Store the storage path (not a public URL) — bucket is private; we generate signed URLs on demand.
+        fileUrl = path;
       }
 
       const { error } = await supabase.from("certifications").insert({
@@ -410,9 +410,27 @@ const ProfileSettings = () => {
                       <div className="flex items-center gap-2 mt-1">
                         {cert.issue_date && <Badge variant="outline" className="text-xs">{cert.issue_date}</Badge>}
                         {cert.file_url && (
-                          <a href={cert.file_url} target="_blank" rel="noopener noreferrer" className="text-xs text-primary hover:underline flex items-center gap-1">
+                          <button
+                            type="button"
+                            onClick={async () => {
+                              // Migrate legacy public URLs: extract storage path if needed
+                              const raw = cert.file_url!;
+                              const path = raw.includes("/certificates/")
+                                ? raw.split("/certificates/")[1].split("?")[0]
+                                : raw;
+                              const { data, error } = await supabase.storage
+                                .from("certificates")
+                                .createSignedUrl(path, 3600);
+                              if (error || !data?.signedUrl) {
+                                toast({ title: "Unable to open file", description: error?.message ?? "Try again later.", variant: "destructive" });
+                                return;
+                              }
+                              window.open(data.signedUrl, "_blank", "noopener,noreferrer");
+                            }}
+                            className="text-xs text-primary hover:underline flex items-center gap-1"
+                          >
                             <FileText className="w-3 h-3" /> View PDF
-                          </a>
+                          </button>
                         )}
                       </div>
                     </div>
