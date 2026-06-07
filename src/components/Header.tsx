@@ -1,14 +1,27 @@
-import { FileText, Menu, X, User, LogOut, Loader2, Settings } from "lucide-react";
+import { Menu, X, User, LogOut, Loader2, Settings, Rocket } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "@/components/NotificationBell";
+import StepperNav from "@/components/StepperNav";
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isOnline, setIsOnline] = useState(navigator.onLine);
   const { user, profile, isLoading, signOut } = useAuth();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const on = () => setIsOnline(true);
+    const off = () => setIsOnline(false);
+    window.addEventListener("online", on);
+    window.addEventListener("offline", off);
+    return () => {
+      window.removeEventListener("online", on);
+      window.removeEventListener("offline", off);
+    };
+  }, []);
 
   const handleSignOut = async () => {
     await signOut();
@@ -16,117 +29,122 @@ const Header = () => {
   };
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 glass">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center shadow-md">
-              <FileText className="w-5 h-5 text-primary-foreground" />
-            </div>
-            <span className="text-xl font-extrabold text-foreground font-display">Path4U</span>
-          </Link>
-
-          {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center gap-8 ml-8">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-              Features
-            </a>
-            <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
-              How it Works
-            </a>
-            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-              Pricing
-            </a>
-            <NotificationBell />
-          </nav>
-
-          <div className="hidden md:flex items-center gap-4">
-            {isLoading ? (
-              <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
-            ) : user ? (
-              <>
-                <Link to="/dashboard">
-                  <Button variant="ghost" className="gap-2">
-                    <User className="w-4 h-4" />
-                    {profile?.full_name || user.email?.split('@')[0]}
-                  </Button>
-                </Link>
-                <Link to="/settings">
-                  <Button variant="ghost" size="icon">
-                    <Settings className="w-4 h-4" />
-                  </Button>
-                </Link>
-                <Button variant="outline" onClick={handleSignOut} className="gap-2">
-                  <LogOut className="w-4 h-4" />
-                  Sign Out
-                </Button>
-              </>
-            ) : (
-              <>
-                <Link to="/auth">
-                  <Button variant="ghost">Sign In</Button>
-                </Link>
-                <Link to="/company/auth">
-                  <Button variant="outline" size="sm">For Companies</Button>
-                </Link>
-                <Link to="/auth">
-                  <Button variant="hero">Get Started</Button>
-                </Link>
-              </>
-            )}
+    <header className="sticky top-0 z-50 w-full border-b border-border bg-background/80 backdrop-blur-md">
+      <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+        <Link to="/" className="flex items-center gap-2">
+          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary text-primary-foreground shadow-lg">
+            <Rocket className="h-6 w-6" />
           </div>
+          <span className="text-xl font-bold tracking-tight text-foreground font-display">Path4U</span>
+          {!isOnline && (
+            <div className="flex items-center gap-1 bg-warning/10 border border-warning/20 text-warning text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded-full ml-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-warning animate-pulse" />
+              Offline
+            </div>
+          )}
+        </Link>
 
-          {/* Mobile Menu Button */}
-          <button
-            className="md:hidden p-2"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            {isMenuOpen ? <X /> : <Menu />}
-          </button>
+        {user && <StepperNav />}
+
+        <div className="hidden md:flex items-center gap-4">
+          {user && <NotificationBell />}
+          {isLoading ? (
+            <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+          ) : user ? (
+            <>
+              <div className="h-8 w-px bg-border" />
+              <div className="group relative">
+                <Link to="/dashboard" className="flex items-center gap-3 p-1 rounded-xl hover:bg-muted transition-all">
+                  <div className="text-right hidden sm:block">
+                    <p className="text-[11px] font-black text-foreground uppercase tracking-widest leading-none mb-1">
+                      {profile?.full_name || user.email?.split("@")[0]}
+                    </p>
+                    <p className="text-[10px] font-bold text-muted-foreground leading-none">Standard Tier</p>
+                  </div>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 text-primary border border-primary/20 group-hover:bg-primary group-hover:text-primary-foreground transition-all overflow-hidden">
+                    {profile?.avatar_url ? (
+                      <img src={profile.avatar_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <User className="h-5 w-5" />
+                    )}
+                  </div>
+                </Link>
+
+                <div className="absolute right-0 mt-2 w-56 rounded-2xl bg-popover p-2 shadow-2xl border border-border opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
+                  <Link
+                    to="/settings"
+                    className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-foreground hover:bg-muted transition-colors"
+                  >
+                    <Settings className="h-4 w-4 text-primary" />
+                    Profile Settings
+                  </Link>
+                  <div className="h-px bg-border my-1" />
+                  <button
+                    onClick={handleSignOut}
+                    className="flex w-full items-center gap-3 rounded-xl px-4 py-3 text-sm font-bold text-destructive hover:bg-destructive/10 transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    Sign Out
+                  </button>
+                </div>
+              </div>
+            </>
+          ) : (
+            <>
+              <Link to="/auth">
+                <Button variant="ghost">Sign In</Button>
+              </Link>
+              <Link to="/company/auth">
+                <Button variant="outline" size="sm">
+                  For Companies
+                </Button>
+              </Link>
+              <Link to="/auth">
+                <Button variant="hero">Get Started</Button>
+              </Link>
+            </>
+          )}
         </div>
 
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <nav className="md:hidden mt-4 pb-4 flex flex-col gap-4">
-            <a href="#features" className="text-muted-foreground hover:text-foreground transition-colors">
-              Features
-            </a>
-            <a href="#how-it-works" className="text-muted-foreground hover:text-foreground transition-colors">
-              How it Works
-            </a>
-            <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-              Pricing
-            </a>
-            <div className="flex flex-col gap-2 pt-4">
-              {isLoading ? (
-                <Loader2 className="w-5 h-5 animate-spin text-muted-foreground mx-auto" />
-              ) : user ? (
-                <>
-                  <Link to="/dashboard">
-                    <Button variant="ghost" className="w-full gap-2">
-                      <User className="w-4 h-4" />
-                      Dashboard
-                    </Button>
-                  </Link>
-                  <Button variant="outline" onClick={handleSignOut} className="w-full gap-2">
-                    <LogOut className="w-4 h-4" />
-                    Sign Out
-                  </Button>
-                </>
-              ) : (
-                <>
-                  <Link to="/auth">
-                    <Button variant="ghost" className="w-full">Sign In</Button>
-                  </Link>
-                  <Link to="/auth">
-                    <Button variant="hero" className="w-full">Get Started</Button>
-                  </Link>
-                </>
-              )}
-            </div>
-          </nav>
-        )}
+        <button className="md:hidden p-2" onClick={() => setIsMenuOpen(!isMenuOpen)}>
+          {isMenuOpen ? <X /> : <Menu />}
+        </button>
       </div>
+
+      {isMenuOpen && (
+        <nav className="md:hidden border-t border-border px-4 py-4 flex flex-col gap-3 bg-background">
+          {user ? (
+            <>
+              <Link to="/dashboard">
+                <Button variant="ghost" className="w-full gap-2">
+                  <User className="w-4 h-4" /> Dashboard
+                </Button>
+              </Link>
+              <Link to="/settings">
+                <Button variant="ghost" className="w-full gap-2">
+                  <Settings className="w-4 h-4" /> Settings
+                </Button>
+              </Link>
+              <Button variant="outline" onClick={handleSignOut} className="w-full gap-2">
+                <LogOut className="w-4 h-4" /> Sign Out
+              </Button>
+            </>
+          ) : (
+            <>
+              <Link to="/auth">
+                <Button variant="ghost" className="w-full">
+                  Sign In
+                </Button>
+              </Link>
+              <Link to="/auth">
+                <Button variant="hero" className="w-full">
+                  Get Started
+                </Button>
+              </Link>
+            </>
+          )}
+        </nav>
+      )}
     </header>
   );
 };

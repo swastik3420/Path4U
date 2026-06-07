@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateQuestions, type ParsedResume, type Question } from "@/lib/api/career";
 import { useToast } from "@/components/ui/use-toast";
+import AILoadingOverlay from "@/components/AILoadingOverlay";
 
 interface SkillAssessmentProps {
   onComplete: (results: { skill: string; score: number; level: string }[]) => void;
@@ -118,39 +119,17 @@ const SkillAssessment = ({ onComplete, parsedResume, questionCount }: SkillAsses
   // Loading state
   if (isLoading) {
     return (
-      <section className="py-20 min-h-screen">
-        <div className="container mx-auto px-4">
-          <div className="max-w-3xl mx-auto text-center">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="bg-card rounded-2xl shadow-lg p-12"
-            >
-              <div className="w-20 h-20 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-6">
-                <Loader2 className="w-10 h-10 text-primary-foreground animate-spin" />
-              </div>
-              <h3 className="text-2xl font-bold text-foreground mb-4">
-                Generating Your Assessment
-              </h3>
-              <p className="text-muted-foreground mb-6">
-                Our AI is creating personalized questions based on the {parsedResume.skills.length} skills found in your resume...
-              </p>
-              <div className="flex flex-wrap justify-center gap-2">
-                {parsedResume.skills.slice(0, 8).map((skill, i) => (
-                  <span key={i} className="px-3 py-1 bg-secondary/20 text-secondary rounded-full text-sm">
-                    {skill.name}
-                  </span>
-                ))}
-                {parsedResume.skills.length > 8 && (
-                  <span className="px-3 py-1 bg-muted text-muted-foreground rounded-full text-sm">
-                    +{parsedResume.skills.length - 8} more
-                  </span>
-                )}
-              </div>
-            </motion.div>
-          </div>
-        </div>
-      </section>
+      <AILoadingOverlay
+        isLoading
+        title="Locking Syllabus & Generating Evaluation..."
+        messages={[
+          "Locking Syllabus & Generating Evaluation...",
+          "Mapping technical domains to proficiency tiers...",
+          "Calibrating MCQ difficulty based on resume context...",
+          "Fine-tuning distractor options for precision...",
+          "Readying the Path4U evaluation engine...",
+        ]}
+      />
     );
   }
 

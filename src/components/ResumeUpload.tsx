@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { motion, AnimatePresence } from "framer-motion";
 import { parseResume, extractResumeText, type ParsedResume } from "@/lib/api/career";
 import { useToast } from "@/components/ui/use-toast";
+import AILoadingOverlay from "@/components/AILoadingOverlay";
 
 interface ResumeUploadProps {
   onFileUploaded: (file: File) => void;
@@ -123,6 +124,17 @@ const ResumeUpload = ({ onFileUploaded, onStartAssessment, onResumeAnalyzed }: R
 
   return (
     <section id="upload" className="py-20">
+      <AILoadingOverlay
+        isLoading={isProcessing}
+        title={processingStatus || "Scanning Resume for Keywords..."}
+        messages={[
+          "Scanning Resume for Keywords...",
+          "Extracting core competencies...",
+          "Identifying educational milestones...",
+          "Parsing certifications and achievements...",
+          "Structuring your professional digital twin...",
+        ]}
+      />
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}

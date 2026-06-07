@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Header from "@/components/Header";
 import Hero from "@/components/Hero";
 import HowItWorks from "@/components/HowItWorks";
@@ -9,6 +9,7 @@ import Features from "@/components/Features";
 import Footer from "@/components/Footer";
 import { Toaster } from "@/components/ui/toaster";
 import { type ParsedResume } from "@/lib/api/career";
+import { useAppFlow } from "@/contexts/AppFlowContext";
 
 type AppState = "landing" | "upload" | "assessment" | "results";
 
@@ -24,6 +25,21 @@ const Index = () => {
   const [assessmentResults, setAssessmentResults] = useState<SkillResult[]>([]);
   const [parsedResume, setParsedResume] = useState<ParsedResume | null>(null);
   const [assessmentMode, setAssessmentMode] = useState<"demo" | "full">("full");
+  const flow = useAppFlow();
+
+  // Sync local appState with shared flow context (drives stepper in header)
+  useEffect(() => {
+    if (!flow) return;
+    const map: Record<AppState, "landing" | "upload" | "assessment" | "results"> = {
+      landing: "landing",
+      upload: "upload",
+      assessment: "assessment",
+      results: "results",
+    };
+    flow.setStage(map[appState]);
+    flow.setHasResume(!!parsedResume);
+    flow.setHasQuestions(appState === "assessment" || appState === "results");
+  }, [appState, parsedResume, flow]);
 
   const handleGetStarted = () => {
     setAppState("upload");
