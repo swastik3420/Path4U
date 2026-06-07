@@ -5,6 +5,7 @@ import { Progress } from "@/components/ui/progress";
 import { motion, AnimatePresence } from "framer-motion";
 import { generateQuestions, type ParsedResume, type Question } from "@/lib/api/career";
 import { useToast } from "@/components/ui/use-toast";
+import AILoadingOverlay from "@/components/AILoadingOverlay";
 
 interface SkillAssessmentProps {
   onComplete: (results: { skill: string; score: number; level: string }[]) => void;
@@ -117,6 +118,20 @@ const SkillAssessment = ({ onComplete, parsedResume, questionCount }: SkillAsses
 
   // Loading state
   if (isLoading) {
+    return (
+      <AILoadingOverlay
+        isLoading
+        title="Locking Syllabus & Generating Evaluation..."
+        messages={[
+          "Locking Syllabus & Generating Evaluation...",
+          "Mapping technical domains to proficiency tiers...",
+          "Calibrating MCQ difficulty based on resume context...",
+          "Fine-tuning distractor options for precision...",
+          "Readying the Path4U evaluation engine...",
+        ]}
+      />
+    );
+    // eslint-disable-next-line no-unreachable
     return (
       <section className="py-20 min-h-screen">
         <div className="container mx-auto px-4">
