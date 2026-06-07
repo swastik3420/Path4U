@@ -25,6 +25,21 @@ const Index = () => {
   const [assessmentResults, setAssessmentResults] = useState<SkillResult[]>([]);
   const [parsedResume, setParsedResume] = useState<ParsedResume | null>(null);
   const [assessmentMode, setAssessmentMode] = useState<"demo" | "full">("full");
+  const flow = useAppFlow();
+
+  // Sync local appState with shared flow context (drives stepper in header)
+  useEffect(() => {
+    if (!flow) return;
+    const map: Record<AppState, "landing" | "upload" | "assessment" | "results"> = {
+      landing: "landing",
+      upload: "upload",
+      assessment: "assessment",
+      results: "results",
+    };
+    flow.setStage(map[appState]);
+    flow.setHasResume(!!parsedResume);
+    flow.setHasQuestions(appState === "assessment" || appState === "results");
+  }, [appState, parsedResume, flow]);
 
   const handleGetStarted = () => {
     setAppState("upload");
