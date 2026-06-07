@@ -12,6 +12,8 @@ import ProfileSettings from "./pages/ProfileSettings";
 import CompanyAuth from "./pages/CompanyAuth";
 import CompanyDashboard from "./pages/CompanyDashboard";
 import NotFound from "./pages/NotFound";
+import SplashScreen from "./components/SplashScreen";
+import { AppFlowProvider } from "./contexts/AppFlowContext";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +22,9 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
+      <SplashScreen />
       <BrowserRouter>
+        <AppFlowProvider>
         <Routes>
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
@@ -33,6 +37,7 @@ const App = () => (
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </AppFlowProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
