@@ -68,9 +68,9 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             transition={{ duration: 0.8, delay: 0.15 }}
             className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[0.95] mb-8 font-display"
           >
-            <span className="text-foreground">Unlock Your</span>
+            <span className="text-foreground">Unlock Uncharted Horizons Of Your Career Path</span>
             <br />
-            <span className="gradient-text-vivid">Career Potential</span>
+            <span className="gradient-text-vivid">With AI-Powered Skill&nbsp;Diagnostics&nbsp;</span>
           </motion.h1>
 
           {/* Subheading */}
@@ -80,8 +80,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             transition={{ duration: 0.8, delay: 0.3 }}
             className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed"
           >
-            Upload your resume, conquer AI-adaptive assessments, uncover skill gaps, 
-            and get matched with roles that actually fit.
+            Stop navigating the job market blindly. Scan your profile, benchmark your skills with interactive diagnostics, and step directly into your true career potential.
           </motion.p>
 
           {/* CTA Button */}
@@ -114,9 +113,9 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             className="grid grid-cols-3 max-w-lg mx-auto gap-8 mb-16"
           >
             {[
-              { value: "10K+", label: "Resumes Analyzed" },
+              { value: "100+", label: "Resumes Analyzed" },
               { value: "95%", label: "Accuracy Rate" },
-              { value: "500+", label: "Jobs Matched" },
+              { value: "100+", label: "Jobs Matched" },
             ].map((stat) => (
               <div key={stat.label} className="text-center">
                 <div className="text-2xl md:text-3xl font-bold gradient-text font-display">{stat.value}</div>
@@ -133,9 +132,9 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             className="flex flex-wrap items-center justify-center gap-3"
           >
             {[
-              { icon: Upload, label: "Resume Scanning", color: "text-primary" },
+              { icon: Upload, label: "AI Based Resume Scanning", color: "text-primary" },
               { icon: Target, label: "Skill Assessment", color: "text-accent" },
-              { icon: Briefcase, label: "Job Matching", color: "text-secondary" },
+              { icon: Briefcase, label: "AI Powered Job Matching", color: "text-secondary" },
             ].map((pill) => (
               <div
                 key={pill.label}
