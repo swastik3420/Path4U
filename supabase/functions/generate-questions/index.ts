@@ -24,6 +24,35 @@ serve(async (req) => {
       );
     }
 
+    if (skills.length > 50) {
+      console.warn('Oversized skills payload rejected:', skills.length);
+      return new Response(
+        JSON.stringify({ error: 'Too many skills provided (max 50).' }),
+        { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    if (typeof experienceLevel === 'string' && experienceLevel.length > 100) {
+      return new Response(
+        JSON.stringify({ error: 'experienceLevel too long.' }),
+        { status: 413, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
+    // Truncate string fields on each skill
+    const truncStr = (v: unknown, max: number) =>
+      typeof v === 'string' ? v.slice(0, max) : v;
+    for (let i = 0; i < skills.length; i++) {
+      const s = skills[i];
+      if (typeof s === 'string') {
+        skills[i] = s.slice(0, 200);
+      } else if (s && typeof s === 'object') {
+        s.name = truncStr(s.name, 200);
+        s.category = truncStr(s.category, 100);
+        s.proficiencyHint = truncStr(s.proficiencyHint, 50);
+      }
+    }
+
     const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     if (!LOVABLE_API_KEY) {
       return new Response(
