@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import NotificationBell from "@/components/NotificationBell";
+import ThemeToggle from "@/components/ThemeToggle";
 import StepperNav from "@/components/StepperNav";
 
 const Header = () => {
@@ -47,7 +48,8 @@ const Header = () => {
         {user && <StepperNav />}
 
         <div className="hidden md:flex items-center gap-4">
-          {user && <NotificationBell />}
+          <ThemeToggle />
+          <NotificationBell />
           {isLoading ? (
             <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
           ) : user ? (
