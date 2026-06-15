@@ -39,7 +39,7 @@ serve(async (req) => {
       .order('created_at', { ascending: false })
       .limit(20);
 
-    const userSkills = skills.map((s: any) => (s.name || s.skill || '').toLowerCase());
+    const userSkills = boundedSkills.map((s: any) => (s.name || s.skill || '').toLowerCase());
 
     const companyJobs = (dbJobs || []).map((job: any) => {
       const requiredSkills = (job.skills_required || []).map((s: string) => s.toLowerCase());
