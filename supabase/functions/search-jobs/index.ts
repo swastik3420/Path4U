@@ -72,7 +72,7 @@ serve(async (req) => {
     let aiJobs: any[] = [];
 
     if (LOVABLE_API_KEY) {
-      const topSkills = skills
+      const topSkills = boundedSkills
         .sort((a: any, b: any) => b.score - a.score)
         .slice(0, 6)
         .map((s: any) => s.name || s.skill)
@@ -96,9 +96,9 @@ serve(async (req) => {
                 role: 'user',
                 content: `Find 6 matching jobs for this candidate:
 - Top skills: ${topSkills}
-- Experience: ${experienceLevel}
-- Previous roles: ${(jobTitles || []).join(', ') || 'Not specified'}
-- Industries: ${(industries || []).join(', ') || 'Not specified'}
+- Experience: ${boundedExperience}
+- Previous roles: ${boundedJobTitles.join(', ') || 'Not specified'}
+- Industries: ${boundedIndustries.join(', ') || 'Not specified'}
 
 Return ONLY a JSON object:
 {"jobs": [{"title": "...", "company": "...", "location": "...", "type": "Full-time", "match": 92, "url": "https://...", "source": "LinkedIn", "postedDate": "Recent"}]}`
