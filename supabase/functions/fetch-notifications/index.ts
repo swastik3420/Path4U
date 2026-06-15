@@ -87,9 +87,9 @@ Return ONLY the JSON array, no markdown.`;
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {
-    console.error("Error:", error);
+    console.error("Error:", error instanceof Error ? error.message : error);
     return new Response(
-      JSON.stringify({ error: error.message, notifications: [] }),
+      JSON.stringify({ error: 'An unexpected error occurred.', notifications: [] }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   }
