@@ -40,6 +40,7 @@ interface Education {
 
 const ProfileSettings = () => {
   const { user, profile, isLoading, updateProfile } = useAuth();
+  const { reduceMotion, toggleReduceMotion } = useReduceMotion();
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
