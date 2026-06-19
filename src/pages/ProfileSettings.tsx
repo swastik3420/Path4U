@@ -508,6 +508,8 @@ const ProfileSettings = () => {
               </div>
             )}
           </CardContent>
+        </Card>
+
         {/* Accessibility Preferences */}
         <Card>
           <CardHeader>
