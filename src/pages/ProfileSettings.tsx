@@ -1,13 +1,15 @@
 import { useState, useRef, useMemo, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
-import { ArrowLeft, Camera, Loader2, Save, User, Plus, Trash2, FileText, GraduationCap, Award, Upload } from "lucide-react";
+import { ArrowLeft, Camera, Loader2, Save, User, Plus, Trash2, FileText, GraduationCap, Award, Upload, ZapOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import { useReduceMotion } from "@/hooks/useReduceMotion";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -38,6 +40,7 @@ interface Education {
 
 const ProfileSettings = () => {
   const { user, profile, isLoading, updateProfile } = useAuth();
+  const { reduceMotion, toggleReduceMotion } = useReduceMotion();
   const navigate = useNavigate();
   const { toast } = useToast();
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -504,6 +507,30 @@ const ProfileSettings = () => {
                 ))}
               </div>
             )}
+          </CardContent>
+        </Card>
+
+        {/* Accessibility Preferences */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ZapOff className="w-5 h-5 text-primary" />
+              Accessibility
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="reduce-motion" className="text-base font-semibold">Reduce motion</Label>
+                <p className="text-sm text-muted-foreground">Disable theme-transition and view-transition animations.</p>
+              </div>
+              <Switch
+                id="reduce-motion"
+                checked={reduceMotion}
+                onCheckedChange={toggleReduceMotion}
+                aria-label="Reduce motion"
+              />
+            </div>
           </CardContent>
         </Card>
       </motion.div>

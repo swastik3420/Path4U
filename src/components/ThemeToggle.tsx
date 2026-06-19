@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
+import { useReduceMotion } from "@/hooks/useReduceMotion";
 
 const ThemeToggle = () => {
   const [isDark, setIsDark] = useState(false);
+  const { reduceMotion } = useReduceMotion();
 
   useEffect(() => {
     const saved = localStorage.getItem("theme");
@@ -21,6 +23,11 @@ const ThemeToggle = () => {
       root.classList.toggle("dark", next);
       localStorage.setItem("theme", next ? "dark" : "light");
     };
+
+    if (reduceMotion) {
+      applyTheme();
+      return;
+    }
 
     // Enable a temporary global transition for backgrounds, text, borders, etc.
     root.classList.add("theme-transition");
