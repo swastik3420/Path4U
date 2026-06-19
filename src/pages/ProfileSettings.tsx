@@ -508,6 +508,28 @@ const ProfileSettings = () => {
               </div>
             )}
           </CardContent>
+        {/* Accessibility Preferences */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <ZapOff className="w-5 h-5 text-primary" />
+              Accessibility
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label htmlFor="reduce-motion" className="text-base font-semibold">Reduce motion</Label>
+                <p className="text-sm text-muted-foreground">Disable theme-transition and view-transition animations.</p>
+              </div>
+              <Switch
+                id="reduce-motion"
+                checked={reduceMotion}
+                onCheckedChange={toggleReduceMotion}
+                aria-label="Reduce motion"
+              />
+            </div>
+          </CardContent>
         </Card>
       </motion.div>
     </div>
