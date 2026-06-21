@@ -33,11 +33,6 @@ const NotificationBell = () => {
     if (!force && items.length > 0) return;
     force ? setRefreshing(true) : setLoading(true);
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        setItems([]);
-        return;
-      }
       const { data, error } = await supabase.functions.invoke("fetch-notifications");
       if (!error && data?.notifications) setItems(data.notifications);
     } catch (err) {
@@ -142,7 +137,7 @@ const NotificationBell = () => {
             ) : (
               <div className="p-8 text-center flex flex-col items-center justify-center text-muted-foreground">
                 <Newspaper className="h-8 w-8 mb-2 opacity-50" />
-                <p className="text-xs font-bold">Sign in to see latest intelligence.</p>
+                <p className="text-xs font-bold">Gathering latest intelligence...</p>
               </div>
             )}
           </div>
