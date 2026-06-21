@@ -217,6 +217,28 @@
     transition-delay: 0ms !important;
   }
 
+  /* Reduce motion: disable animations, transitions, scroll behavior, and
+     view-transition cross-fades across the entire app (loaders, modals,
+     page transitions, framer-motion, Radix data-state animations, etc.). */
+  html.reduce-motion *,
+  html.reduce-motion *::before,
+  html.reduce-motion *::after {
+    animation-duration: 0.001ms !important;
+    animation-delay: 0ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+    scroll-behavior: auto !important;
+  }
+  html.reduce-motion {
+    scroll-behavior: auto !important;
+  }
+  html.reduce-motion::view-transition-group(*),
+  html.reduce-motion::view-transition-old(*),
+  html.reduce-motion::view-transition-new(*) {
+    animation: none !important;
+  }
+
   body {
     @apply bg-background text-foreground font-sans;
   }
