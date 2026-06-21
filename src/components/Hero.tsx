@@ -1,12 +1,15 @@
-import { ArrowRight, Sparkles, Upload, Target, Briefcase } from "lucide-react";
+import { ArrowRight, Sparkles, Upload, Target, Briefcase, FileSearch } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { useState } from "react";
+import ATSScoreDialog from "@/components/ATSScoreDialog";
 
 interface HeroProps {
   onGetStarted: () => void;
 }
 
 const Hero = ({ onGetStarted }: HeroProps) => {
+  const [atsOpen, setAtsOpen] = useState(false);
   return (
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
       {/* Animated mesh background */}
@@ -78,24 +81,47 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.8, delay: 0.3 }}
-            className="text-lg md:text-xl text-muted-foreground mb-12 max-w-2xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl text-muted-foreground mb-4 max-w-2xl mx-auto leading-relaxed"
           >
             Stop navigating the job market blindly. Scan your profile, benchmark your skills with interactive diagnostics, and step directly into your true career potential.
           </motion.p>
 
-          {/* CTA Button */}
+          {/* ATS suggestion line */}
+          <motion.p
+            initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+            transition={{ duration: 0.8, delay: 0.38 }}
+            className="text-sm md:text-base mb-10 max-w-2xl mx-auto"
+          >
+            <span className="text-muted-foreground">Before going further with your assessment, </span>
+            <span className="gradient-text font-semibold">let AI first check your Resume ATS score</span>
+            <span className="text-muted-foreground"> — see exactly what may be holding it back.</span>
+          </motion.p>
+
+          {/* CTA Buttons */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.45 }}
             className="flex flex-col items-center justify-center gap-3 mb-12"
           >
-            <Button variant="hero" size="xl" onClick={onGetStarted} className="group relative overflow-hidden">
-              <span className="relative z-10 flex items-center gap-2">
-                Analyze My Resume
-                <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
-              </span>
-            </Button>
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+              <Button
+                variant="outline"
+                size="xl"
+                onClick={() => setAtsOpen(true)}
+                className="group border-2"
+              >
+                <FileSearch className="w-5 h-5 mr-2 text-primary" />
+                Check Your Resume ATS Score
+              </Button>
+              <Button variant="hero" size="xl" onClick={onGetStarted} className="group relative overflow-hidden">
+                <span className="relative z-10 flex items-center gap-2">
+                  Analyze My Resume
+                  <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                </span>
+              </Button>
+            </div>
             <p className="text-sm text-muted-foreground">
               Sign up to save your progress, or{" "}
               <span className="text-primary font-medium cursor-pointer hover:underline" onClick={onGetStarted}>
@@ -147,6 +173,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
           </motion.div>
         </div>
       </div>
+      <ATSScoreDialog open={atsOpen} onOpenChange={setAtsOpen} />
     </section>
   );
 };
