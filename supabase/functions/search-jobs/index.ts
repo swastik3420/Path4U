@@ -42,10 +42,8 @@ serve(async (req) => {
     const boundedJobTitles = Array.isArray(jobTitles) ? jobTitles.slice(0, 20).map((i: any) => trunc(i, 150)) : [];
     const boundedExperience = typeof experienceLevel === 'string' ? experienceLevel.slice(0, 100) : experienceLevel;
 
-    // Fetch company-posted jobs from database
-    const supabaseUrl = Deno.env.get('SUPABASE_URL')!;
-    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
-    const supabase = createClient(supabaseUrl, supabaseKey);
+    // Fetch company-posted jobs from database using the user-scoped client (RLS applies)
+
 
     const { data: dbJobs } = await supabase
       .from('job_listings')
