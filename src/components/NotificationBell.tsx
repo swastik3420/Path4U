@@ -33,6 +33,11 @@ const NotificationBell = () => {
     if (!force && items.length > 0) return;
     force ? setRefreshing(true) : setLoading(true);
     try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        setItems([]);
+        return;
+      }
       const { data, error } = await supabase.functions.invoke("fetch-notifications");
       if (!error && data?.notifications) setItems(data.notifications);
     } catch (err) {
