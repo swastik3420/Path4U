@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import ATSScoreDialog from "@/components/ATSScoreDialog";
+import heroBrainBg from "@/assets/hero-brain-bg.jpg";
 
 interface HeroProps {
   onGetStarted: () => void;
@@ -14,26 +15,28 @@ const Hero = ({ onGetStarted }: HeroProps) => {
     <section className="relative min-h-screen flex items-center justify-center pt-20 overflow-hidden">
       {/* Animated mesh background */}
       <div className="absolute inset-0 overflow-hidden">
-        {/* Large morphing orb - primary */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
+        {/* Circuit brain backdrop */}
+        <motion.img
+          src={heroBrainBg}
+          alt=""
+          aria-hidden="true"
+          initial={{ opacity: 0, scale: 1.02 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.5 }}
-          className="absolute -top-20 -right-20 w-[500px] h-[500px] bg-primary/15 animate-morph animate-float"
+          className="absolute right-0 top-1/2 -translate-y-1/2 h-[110%] w-auto max-w-[70%] object-contain object-right pointer-events-none select-none"
         />
-        {/* Accent orb */}
+        {/* Soft accent orbs for depth */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.5, delay: 0.3 }}
-          className="absolute top-1/3 -left-32 w-[400px] h-[400px] bg-accent/12 animate-morph animate-float-delayed"
+          className="absolute top-1/3 -left-32 w-[400px] h-[400px] bg-primary/10 animate-morph animate-float-delayed"
         />
-        {/* Secondary orb */}
         <motion.div
           initial={{ opacity: 0, scale: 0.8 }}
           animate={{ opacity: 1, scale: 1 }}
           transition={{ duration: 1.5, delay: 0.6 }}
-          className="absolute -bottom-20 right-1/4 w-[350px] h-[350px] bg-secondary/12 animate-morph animate-float-slow"
+          className="absolute -bottom-20 -left-10 w-[350px] h-[350px] bg-accent/10 animate-morph animate-float-slow"
         />
         {/* Grid pattern overlay */}
         <div
@@ -43,8 +46,10 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             backgroundSize: '40px 40px',
           }}
         />
-        {/* Radial gradient overlay */}
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_0%,_hsl(var(--background))_70%)]" />
+        {/* Left-side fade so text stays readable */}
+        <div className="absolute inset-0 bg-[linear-gradient(90deg,_hsl(var(--background))_0%,_hsl(var(--background)/0.85)_35%,_transparent_70%)]" />
+        {/* Vignette */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_transparent_0%,_hsl(var(--background))_80%)]" />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
