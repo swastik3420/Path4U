@@ -69,7 +69,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             initial={{ opacity: 0, y: 30, filter: "blur(10px)" }}
             animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
             transition={{ duration: 0.8, delay: 0.15 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-extrabold tracking-tight leading-[0.95] mb-8 font-display"
+            className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight leading-[0.95] mb-8 font-display"
           >
             <span className="text-foreground">Unlock Uncharted Horizons Of Your Career Path</span>
             <br />
