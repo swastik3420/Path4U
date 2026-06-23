@@ -190,8 +190,8 @@ const Hero = ({ onGetStarted }: HeroProps) => {
                 dark:opacity-95 dark:blur-0 dark:mix-blend-screen dark:saturate-125
                 [mask-image:radial-gradient(circle_at_50%_50%,black_55%,transparent_80%)]
                 [-webkit-mask-image:radial-gradient(circle_at_50%_50%,black_55%,transparent_80%)]
-                dark:[mask-image:radial-gradient(ellipse_at_50%_50%,black_50%,transparent_82%)]
-                dark:[-webkit-mask-image:radial-gradient(ellipse_at_50%_50%,black_50%,transparent_82%)]"
+                dark:[mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]
+                dark:[-webkit-mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]"
             />
 
             {/* Holographic tint overlay (light mode only) */}
