@@ -179,7 +179,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             {/* Ambient glow halo (stronger in light to help blend) */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.18),hsl(var(--accent)/0.10)_40%,transparent_70%)] dark:bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)] pointer-events-none transition-all duration-700" />
 
-            {/* Brain image — watermark/holographic in light, vivid in dark */}
+            {/* Brain image — watermark in light, screen-blended hologram in dark */}
             <img
               src={heroBrainBg}
               alt="AI-powered neural brain visualization"
@@ -187,10 +187,11 @@ const Hero = ({ onGetStarted }: HeroProps) => {
               height={1024}
               className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none transition-all duration-700
                 opacity-25 blur-[1.5px] mix-blend-luminosity saturate-50
-                dark:opacity-100 dark:blur-0 dark:mix-blend-normal dark:saturate-100
+                dark:opacity-95 dark:blur-0 dark:mix-blend-screen dark:saturate-125
                 [mask-image:radial-gradient(circle_at_50%_50%,black_55%,transparent_80%)]
                 [-webkit-mask-image:radial-gradient(circle_at_50%_50%,black_55%,transparent_80%)]
-                dark:[mask-image:none] dark:[-webkit-mask-image:none]"
+                dark:[mask-image:radial-gradient(ellipse_at_50%_50%,black_50%,transparent_82%)]
+                dark:[-webkit-mask-image:radial-gradient(ellipse_at_50%_50%,black_50%,transparent_82%)]"
             />
 
             {/* Holographic tint overlay (light mode only) */}
