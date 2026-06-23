@@ -176,15 +176,34 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             transition={{ duration: 1.2, delay: 0.2 }}
             className="relative w-full aspect-square max-w-[640px] mx-auto"
           >
+            {/* Ambient glow halo (stronger in light to help blend) */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.18),hsl(var(--accent)/0.10)_40%,transparent_70%)] dark:bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)] pointer-events-none transition-all duration-700" />
+
+            {/* Brain image — watermark/holographic in light, vivid in dark */}
             <img
               src={heroBrainBg}
               alt="AI-powered neural brain visualization"
-              className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none"
               width={1024}
               height={1024}
+              className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none transition-all duration-700
+                opacity-25 blur-[1.5px] mix-blend-luminosity saturate-50
+                dark:opacity-100 dark:blur-0 dark:mix-blend-normal dark:saturate-100
+                [mask-image:radial-gradient(circle_at_50%_50%,black_55%,transparent_80%)]
+                [-webkit-mask-image:radial-gradient(circle_at_50%_50%,black_55%,transparent_80%)]
+                dark:[mask-image:none] dark:[-webkit-mask-image:none]"
             />
-            {/* Glow */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)] pointer-events-none" />
+
+            {/* Holographic tint overlay (light mode only) */}
+            <div
+              className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 mix-blend-screen"
+              style={{
+                background:
+                  "radial-gradient(circle at 35% 40%, hsl(var(--primary) / 0.22), transparent 55%), radial-gradient(circle at 70% 60%, hsl(var(--accent) / 0.18), transparent 60%), radial-gradient(circle at 50% 80%, hsl(var(--gradient-teal) / 0.15), transparent 65%)",
+              }}
+            />
+
+            {/* Edge fade into page background */}
+            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 bg-[radial-gradient(circle_at_50%_50%,transparent_50%,hsl(var(--background))_85%)]" />
 
             {/* Role chips */}
             {roleChips.map((chip, i) => (
