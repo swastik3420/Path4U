@@ -174,7 +174,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             initial={{ opacity: 0, scale: 0.95 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 1.2, delay: 0.2 }}
-            className="relative w-full aspect-square max-w-[640px] mx-auto -mt-12 lg:-mt-24"
+            className="relative w-full aspect-square max-w-[420px] sm:max-w-[500px] lg:max-w-[640px] mx-auto mt-4 sm:mt-2 lg:-mt-24"
           >
             {/* Ambient glow halo (stronger in light to help blend) */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.18),hsl(var(--accent)/0.10)_40%,transparent_70%)] dark:bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)] pointer-events-none transition-all duration-700" />
