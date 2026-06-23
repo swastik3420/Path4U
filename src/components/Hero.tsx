@@ -21,7 +21,7 @@ const roleChips = [
 const trustedLogos = ["Google", "Microsoft", "Amazon", "Netflix", "Meta", "Adobe"];
 
 const stats = [
-  { icon: Users, value: "500K+", label: "Careers Analyzed" },
+  { icon: Users, value: "100+", label: "Resume Analyzed" },
   { icon: TrendingUp, value: "95%", label: "Accuracy Rate" },
   { icon: Crosshair, value: "10M+", label: "Data Points" },
   { icon: BrainCircuit, value: "24/7", label: "AI Guidance" },
