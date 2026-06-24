@@ -39,6 +39,7 @@ serve(async (req) => {
     // Fetch company-posted jobs from database using the user-scoped client (RLS applies)
 
 
+    const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!);
     const { data: dbJobs } = await supabase
       .from('job_listings')
       .select('*, companies(name)')
