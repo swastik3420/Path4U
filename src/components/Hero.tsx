@@ -212,11 +212,15 @@ const Hero = ({ onGetStarted }: HeroProps) => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 + i * 0.08 }}
-                className="absolute glass rounded-full px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-2 border border-primary/30 shadow-[0_0_20px_hsl(var(--primary)/0.25)] -translate-x-1/2"
+                whileHover={{ scale: 1.08, y: -4 }}
+                whileTap={{ scale: 0.95 }}
+                tabIndex={0}
+                role="button"
+                className="group absolute glass rounded-full px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-2 border border-primary/30 shadow-[0_0_20px_hsl(var(--primary)/0.25)] -translate-x-1/2 cursor-pointer transition-colors duration-300 hover:border-primary/70 hover:bg-primary/10 hover:shadow-[0_0_30px_hsl(var(--primary)/0.55)] active:bg-primary/20 active:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
                 style={{ top: chip.top, left: chip.left }}
               >
-                <chip.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
-                <span className="text-xs md:text-sm font-medium text-foreground whitespace-nowrap">{chip.label}</span>
+                <chip.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary transition-transform duration-300 group-hover:scale-110 group-active:scale-95" />
+                <span className="text-xs md:text-sm font-medium text-foreground whitespace-nowrap transition-colors duration-300 group-hover:text-primary">{chip.label}</span>
               </motion.div>
             ))}
           </motion.div>
