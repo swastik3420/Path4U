@@ -209,11 +209,11 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             {roleChips.map((chip, i) => (
               <motion.div
                 key={chip.label}
-                initial={{ opacity: 0, x: 30 }}
-                animate={{ opacity: 1, x: 0 }}
+                initial={{ opacity: 0, y: -20 }}
+                animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 + i * 0.08 }}
-                className="absolute right-0 sm:-right-2 md:right-0 lg:-right-4 glass rounded-full px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-2 border border-primary/30 shadow-[0_0_20px_hsl(var(--primary)/0.25)]"
-                style={{ top: chip.top }}
+                className="absolute glass rounded-full px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-2 border border-primary/30 shadow-[0_0_20px_hsl(var(--primary)/0.25)] -translate-x-1/2"
+                style={{ top: chip.top, left: chip.left }}
               >
                 <chip.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary" />
                 <span className="text-xs md:text-sm font-medium text-foreground whitespace-nowrap">{chip.label}</span>
