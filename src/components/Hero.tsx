@@ -114,15 +114,15 @@ const Hero = ({ onGetStarted }: HeroProps) => {
                   variant="outline"
                   size="xl"
                   onClick={() => setAtsOpen(true)}
-                  className="group border-2 w-full h-14 justify-center whitespace-nowrap"
+                  className="group border-2 w-full h-14 px-4 justify-center whitespace-nowrap text-sm sm:text-[15px]"
                 >
-                  <FileSearch className="w-5 h-5 mr-2 text-primary" />
+                  <FileSearch className="w-5 h-5 mr-2 text-primary shrink-0" />
                   Check Your Resume ATS Score
                 </Button>
-                <Button variant="hero" size="xl" onClick={onGetStarted} className="group relative overflow-hidden w-full h-14 justify-center whitespace-nowrap">
+                <Button variant="hero" size="xl" onClick={onGetStarted} className="group relative overflow-hidden w-full h-14 px-4 justify-center whitespace-nowrap text-sm sm:text-[15px]">
                   <span className="relative z-10 flex items-center gap-2">
                     Analyze My Resume
-                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
+                    <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1 shrink-0" />
                   </span>
                 </Button>
               </div>
