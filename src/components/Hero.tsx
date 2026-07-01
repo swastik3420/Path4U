@@ -109,17 +109,17 @@ const Hero = ({ onGetStarted }: HeroProps) => {
               transition={{ duration: 0.8, delay: 0.45 }}
               className="flex flex-col gap-3 mb-10"
             >
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
                 <Button
                   variant="outline"
                   size="xl"
                   onClick={() => setAtsOpen(true)}
-                  className="group border-2 w-full justify-center whitespace-nowrap"
+                  className="group border-2 w-full h-14 justify-center whitespace-nowrap"
                 >
                   <FileSearch className="w-5 h-5 mr-2 text-primary" />
                   Check Your Resume ATS Score
                 </Button>
-                <Button variant="hero" size="xl" onClick={onGetStarted} className="group relative overflow-hidden w-full justify-center whitespace-nowrap">
+                <Button variant="hero" size="xl" onClick={onGetStarted} className="group relative overflow-hidden w-full h-14 justify-center whitespace-nowrap">
                   <span className="relative z-10 flex items-center gap-2">
                     Analyze My Resume
                     <ArrowRight className="w-5 h-5 transition-transform group-hover:translate-x-1" />
