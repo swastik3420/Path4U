@@ -10,12 +10,11 @@ interface HeroProps {
 }
 
 const roleChips = [
-  { icon: BarChart3, label: "Data Scientist", top: "8%" },
-  { icon: BrainCircuit, label: "AI Engineer", top: "22%" },
-  { icon: Users, label: "Product Manager", top: "40%" },
-  { icon: Shield, label: "Cybersecurity", top: "58%" },
-  { icon: Cloud, label: "Cloud Architect", top: "74%" },
-  { icon: Pencil, label: "UX Designer", top: "90%" },
+  { icon: BarChart3, label: "Data Scientist", left: "2%", top: "14%" },
+  { icon: BrainCircuit, label: "AI Engineer", left: "20%", top: "2%" },
+  { icon: Users, label: "Product Manager", left: "44%", top: "-4%" },
+  { icon: Shield, label: "Cybersecurity", left: "70%", top: "2%" },
+  { icon: Cloud, label: "Cloud Architect", left: "88%", top: "14%" },
 ];
 
 const trustedLogos = ["Google", "Microsoft", "Amazon", "Netflix", "Meta", "Adobe"];
