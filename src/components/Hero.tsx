@@ -175,54 +175,35 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             transition={{ duration: 1.2, delay: 0.2 }}
             className="relative w-full aspect-square max-w-[420px] sm:max-w-[500px] lg:max-w-[640px] mx-auto mt-4 sm:mt-2 lg:-mt-24"
           >
-            {/* LIGHT MODE: subtle localized lavender+cyan ambient glow that dissolves into the page (no large white bloom) */}
-            <div
-              className="absolute -inset-[10%] pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0"
-              style={{
-                background:
-                  "radial-gradient(ellipse 45% 45% at 50% 50%, rgba(207,247,255,0.35), rgba(207,247,255,0) 70%), radial-gradient(ellipse 55% 55% at 50% 55%, rgba(233,216,255,0.28), rgba(233,216,255,0) 75%)",
-                filter: "blur(20px)",
-              }}
-            />
+            {/* Ambient glow halo (stronger in light to help blend) */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.18),hsl(var(--accent)/0.10)_40%,transparent_70%)] dark:bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)] pointer-events-none transition-all duration-700" />
 
-            {/* Left-side flowing energy strand hint (light mode) — pale cyan/lavender */}
-            <div
-              className="absolute inset-y-[15%] -left-[8%] w-[45%] pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0"
-              style={{
-                background:
-                  "radial-gradient(ellipse 55% 35% at 35% 50%, rgba(158,235,255,0.22), transparent 70%), radial-gradient(ellipse 40% 25% at 25% 45%, rgba(233,216,255,0.2), transparent 72%)",
-                filter: "blur(16px)",
-                maskImage:
-                  "linear-gradient(to right, transparent 0%, black 30%, black 60%, transparent 100%)",
-                WebkitMaskImage:
-                  "linear-gradient(to right, transparent 0%, black 30%, black 60%, transparent 100%)",
-              }}
-            />
-
-            {/* DARK MODE: original ambient halo (unchanged) */}
-            <div className="absolute inset-0 hidden dark:block bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)] pointer-events-none" />
-
-            {/* Brain image — screen blend makes the dark source background disappear against the light page */}
+            {/* Brain image — watermark in light, screen-blended hologram in dark */}
             <img
               src={heroBrainBg}
               alt="AI-powered neural brain visualization"
               width={1024}
               height={1024}
               className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none transition-all duration-700
-                mix-blend-screen opacity-95 [filter:brightness(1.1)_contrast(1.05)_hue-rotate(195deg)_saturate(0.75)]
-                dark:[filter:none] dark:opacity-95 dark:mix-blend-screen dark:saturate-125 dark:contrast-100
+                opacity-35 mix-blend-multiply [filter:saturate(0.2)_brightness(1.3)_contrast(0.8)_hue-rotate(215deg)_drop-shadow(0_0_20px_rgba(255,255,255,0.75))_drop-shadow(0_0_40px_rgba(210,200,255,0.4))]
+                dark:[filter:none] dark:opacity-95 dark:blur-0 dark:mix-blend-screen dark:saturate-125 dark:contrast-100
+                [mask-image:radial-gradient(ellipse_at_50%_50%,black_45%,transparent_78%)]
+                [-webkit-mask-image:radial-gradient(ellipse_at_50%_50%,black_45%,transparent_78%)]
                 dark:[mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]
                 dark:[-webkit-mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]"
             />
 
-            {/* Pearlescent lavender/cyan tint over the brain (light mode only) */}
+            {/* Holographic tint overlay (light mode only) */}
             <div
               className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 mix-blend-screen"
               style={{
                 background:
-                  "radial-gradient(circle at 45% 50%, rgba(158,235,255,0.18), transparent 55%), radial-gradient(circle at 60% 55%, rgba(233,216,255,0.2), transparent 60%)",
+                  "radial-gradient(circle at 35% 40%, hsl(var(--primary) / 0.22), transparent 55%), radial-gradient(circle at 70% 60%, hsl(var(--accent) / 0.18), transparent 60%), radial-gradient(circle at 50% 80%, hsl(var(--gradient-teal) / 0.15), transparent 65%)",
               }}
             />
+
+            {/* Edge fade into page background */}
+            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 bg-[radial-gradient(circle_at_50%_50%,transparent_50%,hsl(var(--background))_85%)]" />
 
             {/* Role chips */}
             {roleChips.map((chip, i) => (
