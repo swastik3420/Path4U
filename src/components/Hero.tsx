@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import { useState } from "react";
 import ATSScoreDialog from "@/components/ATSScoreDialog";
 import heroBrainBg from "@/assets/hero-brain-bg.jpg";
+import heroBrainLight from "@/assets/hero-brain-light.jpg";
 
 interface HeroProps {
   onGetStarted: () => void;
