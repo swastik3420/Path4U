@@ -185,10 +185,10 @@ const Hero = ({ onGetStarted }: HeroProps) => {
               width={1024}
               height={1024}
               className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none transition-all duration-700
-                opacity-35 mix-blend-multiply [filter:saturate(0.2)_brightness(1.3)_contrast(0.8)_hue-rotate(215deg)_drop-shadow(0_0_20px_rgba(255,255,255,0.75))_drop-shadow(0_0_40px_rgba(210,200,255,0.4))]
-                dark:[filter:none] dark:opacity-95 dark:blur-0 dark:mix-blend-screen dark:saturate-125 dark:contrast-100
-                [mask-image:radial-gradient(ellipse_at_50%_50%,black_45%,transparent_78%)]
-                [-webkit-mask-image:radial-gradient(ellipse_at_50%_50%,black_45%,transparent_78%)]
+                opacity-25 blur-[1.5px] mix-blend-luminosity saturate-50
+                dark:opacity-95 dark:blur-0 dark:mix-blend-screen dark:saturate-125
+                [mask-image:radial-gradient(circle_at_50%_50%,black_55%,transparent_80%)]
+                [-webkit-mask-image:radial-gradient(circle_at_50%_50%,black_55%,transparent_80%)]
                 dark:[mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]
                 dark:[-webkit-mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]"
             />
