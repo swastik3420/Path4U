@@ -175,98 +175,54 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             transition={{ duration: 1.2, delay: 0.2 }}
             className="relative w-full aspect-square max-w-[420px] sm:max-w-[500px] lg:max-w-[640px] mx-auto mt-4 sm:mt-2 lg:-mt-24"
           >
-            {/* LIGHT MODE: layered pearlescent halo (white → lavender → cyan), feathering into page */}
+            {/* LIGHT MODE: subtle localized lavender+cyan ambient glow that dissolves into the page (no large white bloom) */}
             <div
-              className="absolute -inset-[15%] pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0"
+              className="absolute -inset-[10%] pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0"
               style={{
                 background:
-                  "radial-gradient(ellipse 55% 55% at 50% 50%, rgba(255,255,255,0.9), rgba(255,255,255,0) 70%), radial-gradient(ellipse 60% 60% at 50% 48%, rgba(244,236,255,0.75), rgba(244,236,255,0) 72%), radial-gradient(ellipse 70% 70% at 50% 55%, rgba(207,247,255,0.45), rgba(207,247,255,0) 75%), radial-gradient(ellipse 80% 80% at 50% 50%, rgba(233,216,255,0.35), rgba(233,216,255,0) 80%)",
-                filter: "blur(6px)",
+                  "radial-gradient(ellipse 45% 45% at 50% 50%, rgba(207,247,255,0.35), rgba(207,247,255,0) 70%), radial-gradient(ellipse 55% 55% at 50% 55%, rgba(233,216,255,0.28), rgba(233,216,255,0) 75%)",
+                filter: "blur(20px)",
               }}
             />
-            {/* LIGHT MODE: outer volumetric bloom that dissolves into the page */}
+
+            {/* Left-side flowing energy strand hint (light mode) — pale cyan/lavender */}
             <div
-              className="absolute -inset-[30%] pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0"
+              className="absolute inset-y-[15%] -left-[8%] w-[45%] pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0"
               style={{
                 background:
-                  "radial-gradient(circle at 50% 50%, rgba(158,235,255,0.18), transparent 55%), radial-gradient(circle at 45% 55%, rgba(233,216,255,0.22), transparent 60%)",
-                filter: "blur(30px)",
-              }}
-            />
-            {/* Left-side flowing energy strands (light mode) */}
-            <div
-              className="absolute inset-y-[10%] -left-[15%] w-[55%] pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0"
-              style={{
-                background:
-                  "radial-gradient(ellipse 60% 40% at 30% 50%, rgba(158,235,255,0.28), transparent 65%), radial-gradient(ellipse 50% 30% at 25% 45%, rgba(207,247,255,0.35), transparent 70%), radial-gradient(ellipse 40% 25% at 20% 60%, rgba(233,216,255,0.25), transparent 70%)",
-                filter: "blur(14px)",
+                  "radial-gradient(ellipse 55% 35% at 35% 50%, rgba(158,235,255,0.22), transparent 70%), radial-gradient(ellipse 40% 25% at 25% 45%, rgba(233,216,255,0.2), transparent 72%)",
+                filter: "blur(16px)",
                 maskImage:
-                  "linear-gradient(to right, transparent 0%, black 25%, black 55%, transparent 100%)",
+                  "linear-gradient(to right, transparent 0%, black 30%, black 60%, transparent 100%)",
                 WebkitMaskImage:
-                  "linear-gradient(to right, transparent 0%, black 25%, black 55%, transparent 100%)",
-              }}
-            />
-            {/* Subtle floating particles (light mode) */}
-            <div
-              className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle, rgba(158,235,255,0.55) 1px, transparent 1.5px), radial-gradient(circle, rgba(233,216,255,0.5) 1px, transparent 1.5px)",
-                backgroundSize: "90px 90px, 130px 130px",
-                backgroundPosition: "10% 20%, 60% 70%",
-                maskImage:
-                  "radial-gradient(ellipse at 50% 50%, black 30%, transparent 75%)",
-                WebkitMaskImage:
-                  "radial-gradient(ellipse at 50% 50%, black 30%, transparent 75%)",
+                  "linear-gradient(to right, transparent 0%, black 30%, black 60%, transparent 100%)",
               }}
             />
 
             {/* DARK MODE: original ambient halo (unchanged) */}
             <div className="absolute inset-0 hidden dark:block bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)] pointer-events-none" />
 
-            {/* Brain image — pearlescent frosted glass in light, screen-blended hologram in dark */}
+            {/* Brain image — screen blend makes the dark source background disappear against the light page */}
             <img
               src={heroBrainBg}
               alt="AI-powered neural brain visualization"
               width={1024}
               height={1024}
               className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none transition-all duration-700
-                opacity-70 mix-blend-screen [filter:grayscale(0.55)_brightness(1.6)_contrast(0.85)_hue-rotate(200deg)_saturate(0.6)_drop-shadow(0_0_10px_rgba(255,255,255,0.9))_drop-shadow(0_0_24px_rgba(244,236,255,0.7))_drop-shadow(0_0_45px_rgba(207,247,255,0.5))_drop-shadow(0_0_70px_rgba(233,216,255,0.35))]
+                mix-blend-screen opacity-95 [filter:brightness(1.1)_contrast(1.05)_hue-rotate(195deg)_saturate(0.75)]
                 dark:[filter:none] dark:opacity-95 dark:mix-blend-screen dark:saturate-125 dark:contrast-100
-                [mask-image:radial-gradient(ellipse_at_50%_50%,black_55%,transparent_85%)]
-                [-webkit-mask-image:radial-gradient(ellipse_at_50%_50%,black_55%,transparent_85%)]
                 dark:[mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]
                 dark:[-webkit-mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]"
             />
 
-            {/* Pearlescent tint overlay on the brain (light mode only) — cyan + lavender highlights over circuit lines */}
+            {/* Pearlescent lavender/cyan tint over the brain (light mode only) */}
             <div
-              className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 mix-blend-overlay"
+              className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 mix-blend-screen"
               style={{
                 background:
-                  "radial-gradient(circle at 40% 45%, rgba(158,235,255,0.35), transparent 55%), radial-gradient(circle at 65% 55%, rgba(233,216,255,0.4), transparent 60%), radial-gradient(circle at 50% 80%, rgba(207,247,255,0.3), transparent 65%)",
-                maskImage:
-                  "radial-gradient(ellipse at 50% 50%, black 40%, transparent 75%)",
-                WebkitMaskImage:
-                  "radial-gradient(ellipse at 50% 50%, black 40%, transparent 75%)",
+                  "radial-gradient(circle at 45% 50%, rgba(158,235,255,0.18), transparent 55%), radial-gradient(circle at 60% 55%, rgba(233,216,255,0.2), transparent 60%)",
               }}
             />
-
-            {/* Glass diffusion sheen (light mode only) */}
-            <div
-              className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0"
-              style={{
-                background:
-                  "linear-gradient(160deg, rgba(255,255,255,0.35) 0%, rgba(255,255,255,0) 40%, rgba(244,236,255,0.15) 70%, rgba(255,255,255,0) 100%)",
-                maskImage:
-                  "radial-gradient(ellipse at 50% 50%, black 40%, transparent 78%)",
-                WebkitMaskImage:
-                  "radial-gradient(ellipse at 50% 50%, black 40%, transparent 78%)",
-              }}
-            />
-
-            {/* Edge feather into page (light mode only) — no visible circle */}
-            <div className="absolute -inset-[10%] pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 bg-[radial-gradient(ellipse_at_50%_50%,transparent_55%,hsl(var(--background))_92%)]" />
 
             {/* Role chips */}
             {roleChips.map((chip, i) => (
