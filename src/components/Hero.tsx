@@ -19,28 +19,28 @@ const roleChips = [
 
 const trustedLogos = ["Google", "Microsoft", "Amazon", "Netflix", "Meta", "Adobe"];
 
-// Left side = pain points (before Path4U). Right side = benefits (with Path4U).
+// Positions match the reference brain layout. `tone` picks the neon color.
 const painLabels = [
-  { label: "Manual Applying", top: "18%", left: "6%" },
-  { label: "frustration", top: "26%", left: "2%" },
-  { label: "No Feedback", top: "24%", left: "26%" },
-  { label: "online rejections", top: "36%", left: "0%" },
-  { label: "No Direction", top: "36%", left: "26%" },
-  { label: "cold calling", top: "46%", left: "6%" },
-  { label: "constant rejections", top: "58%", left: "0%" },
-  { label: "Missing Opportunities", top: "56%", left: "22%" },
-  { label: "Irrelevant Listings", top: "70%", left: "4%" },
-  { label: "Trial & Error", top: "82%", left: "10%" },
-];
+  { label: "Manual Applying",     top: "32%", left: "7%",  tone: "pink" },
+  { label: "No Feedback",         top: "38%", left: "32%", tone: "pink" },
+  { label: "frustration",         top: "41%", left: "14%", tone: "cyan" },
+  { label: "online rejections",   top: "51%", left: "10%", tone: "cyan" },
+  { label: "No Direction",        top: "51%", left: "35%", tone: "pink" },
+  { label: "cold calling",        top: "59%", left: "17%", tone: "cyan" },
+  { label: "Missing Opportunities", top: "65%", left: "34%", tone: "pink" },
+  { label: "constant rejections", top: "68%", left: "9%",  tone: "cyan" },
+  { label: "Irrelevant Listings", top: "76%", left: "18%", tone: "pink" },
+  { label: "Trial & Error",       top: "85%", left: "25%", tone: "pink" },
+] as const;
 
 const benefitLabels = [
-  { label: "Smart Matching", top: "16%", right: "4%" },
-  { label: "Real-Time Insights", top: "28%", right: "0%" },
-  { label: "Data-Driven Decisions", top: "40%", right: "-2%" },
-  { label: "Clear Direction", top: "52%", right: "4%" },
-  { label: "Time Efficient", top: "60%", right: "8%" },
-  { label: "AI Resume Scoring", top: "74%", right: "2%" },
-  { label: "Better Opportunities", top: "86%", right: "18%" },
+  { label: "Smart Matching",       top: "26%", right: "24%" },
+  { label: "Real-Time Insights",   top: "35%", right: "12%" },
+  { label: "Data-Driven Decisions",top: "46%", right: "8%"  },
+  { label: "Clear Direction",      top: "55%", right: "14%" },
+  { label: "Time Efficient",       top: "61%", right: "18%" },
+  { label: "AI Resume Scoring",    top: "73%", right: "10%" },
+  { label: "Better Opportunities", top: "79%", right: "30%" },
 ];
 
 const stats = [
@@ -255,7 +255,11 @@ const Hero = ({ onGetStarted }: HeroProps) => {
                 initial={{ opacity: 0, x: -10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.5, delay: 0.8 + i * 0.05 }}
-                className="absolute text-[10px] sm:text-xs md:text-sm font-semibold whitespace-nowrap text-pink-500 dark:text-pink-400 [text-shadow:0_0_10px_hsl(330_90%_65%/0.7)] pointer-events-none select-none"
+                className={`absolute text-[10px] sm:text-xs md:text-sm font-bold whitespace-nowrap pointer-events-none select-none italic ${
+                  p.tone === "pink"
+                    ? "text-pink-500 dark:text-pink-400 [text-shadow:0_0_12px_hsl(325_95%_60%/0.85)]"
+                    : "text-cyan-500 dark:text-cyan-300 [text-shadow:0_0_12px_hsl(190_95%_60%/0.85)]"
+                }`}
                 style={{ top: p.top, left: p.left }}
               >
                 {p.label}
