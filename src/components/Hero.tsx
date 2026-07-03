@@ -40,7 +40,7 @@ const benefitLabels = [
   { label: "Clear Direction",      top: "55%", right: "6%"  },
   { label: "Time Efficient",       top: "61%", right: "10%" },
   { label: "AI Resume Scoring",    top: "73%", right: "2%"  },
-  { label: "Better Opportunities", top: "79%", right: "22%" },
+  { label: "Better Opportunities", top: "79%", right: "8%"  },
 ];
 
 const stats = [
