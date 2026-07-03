@@ -19,6 +19,30 @@ const roleChips = [
 
 const trustedLogos = ["Google", "Microsoft", "Amazon", "Netflix", "Meta", "Adobe"];
 
+// Left side = pain points (before Path4U). Right side = benefits (with Path4U).
+const painLabels = [
+  { label: "Manual Applying", top: "18%", left: "6%" },
+  { label: "frustration", top: "26%", left: "2%" },
+  { label: "No Feedback", top: "24%", left: "26%" },
+  { label: "online rejections", top: "36%", left: "0%" },
+  { label: "No Direction", top: "36%", left: "26%" },
+  { label: "cold calling", top: "46%", left: "6%" },
+  { label: "constant rejections", top: "58%", left: "0%" },
+  { label: "Missing Opportunities", top: "56%", left: "22%" },
+  { label: "Irrelevant Listings", top: "70%", left: "4%" },
+  { label: "Trial & Error", top: "82%", left: "10%" },
+];
+
+const benefitLabels = [
+  { label: "Smart Matching", top: "16%", right: "4%" },
+  { label: "Real-Time Insights", top: "28%", right: "0%" },
+  { label: "Data-Driven Decisions", top: "40%", right: "-2%" },
+  { label: "Clear Direction", top: "52%", right: "4%" },
+  { label: "Time Efficient", top: "60%", right: "8%" },
+  { label: "AI Resume Scoring", top: "74%", right: "2%" },
+  { label: "Better Opportunities", top: "86%", right: "18%" },
+];
+
 const stats = [
   { icon: Users, value: "100+", label: "Resume Analyzed" },
   { icon: TrendingUp, value: "95%", label: "Accuracy Rate" },
