@@ -30,7 +30,7 @@ const painLabels = [
   { label: "Missing Opportunities", top: "65%", left: "34%", tone: "pink" },
   { label: "constant rejections", top: "68%", left: "9%",  tone: "cyan" },
   { label: "Irrelevant Listings", top: "76%", left: "18%", tone: "pink" },
-  { label: "Trial & Error",       top: "80%", left: "25%", tone: "pink" },
+  { label: "Trial & Error",       top: "82%", left: "25%", tone: "pink" },
 ] as const;
 
 const benefitLabels = [
