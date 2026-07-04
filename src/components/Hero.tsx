@@ -286,7 +286,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.8, delay: 1 }}
-              className="absolute top-1/2 left-[56%] -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
+              className="absolute top-1/2 left-[52%] -translate-x-1/2 -translate-y-1/2 pointer-events-none select-none"
             >
               <span className="font-display font-extrabold text-base sm:text-lg md:text-xl lg:text-2xl gradient-text-vivid [text-shadow:0_0_20px_hsl(var(--primary)/0.6)]">
                 Path4U
