@@ -22,12 +22,12 @@ const trustedLogos = ["Google", "Microsoft", "Amazon", "Netflix", "Meta", "Adobe
 // Positions match the reference brain layout. `tone` picks the neon color.
 const painLabels = [
   { label: "Manual Applying",     top: "32%", left: "7%",  tone: "pink" },
-  { label: "No Feedback",         top: "38%", left: "32%", tone: "pink" },
+  { label: "No Feedback",         top: "38%", left: "28%", tone: "pink" },
   { label: "frustration",         top: "41%", left: "14%", tone: "cyan" },
   { label: "online rejections",   top: "51%", left: "10%", tone: "cyan" },
-  { label: "No Direction",        top: "51%", left: "35%", tone: "pink" },
+  { label: "No Direction",        top: "51%", left: "33%", tone: "pink" },
   { label: "cold calling",        top: "59%", left: "17%", tone: "cyan" },
-  { label: "Missing Opportunities", top: "65%", left: "34%", tone: "pink" },
+  { label: "Missing Opportunities", top: "65%", left: "19%", tone: "pink" },
   { label: "constant rejections", top: "68%", left: "9%",  tone: "cyan" },
   { label: "Irrelevant Listings", top: "76%", left: "18%", tone: "pink" },
   { label: "Trial & Error",       top: "82%", left: "25%", tone: "pink" },
