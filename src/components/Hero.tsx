@@ -308,8 +308,6 @@ const Hero = ({ onGetStarted }: HeroProps) => {
 
       </div>
 
-
-      </div>
       <ATSScoreDialog open={atsOpen} onOpenChange={setAtsOpen} />
     </section>
   );
