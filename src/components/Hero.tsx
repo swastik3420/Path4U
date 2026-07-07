@@ -285,7 +285,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 1.1 }}
-          className="mx-auto mt-10 lg:mt-6 max-w-3xl lg:max-w-4xl px-4 text-center text-xs sm:text-sm md:text-base font-medium italic leading-snug text-white/90 [text-shadow:0_0_10px_hsl(0_0%_100%/0.7),0_0_20px_hsl(var(--primary)/0.35)] select-none"
+          className="mx-auto mt-10 lg:mt-6 max-w-3xl lg:max-w-4xl px-4 text-center text-xs sm:text-sm md:text-base font-semibold italic leading-snug select-none text-black/90 [text-shadow:0_0_8px_hsl(0_0%_0%/0.55),0_0_18px_hsl(var(--primary)/0.45)] dark:font-medium dark:text-white/90 dark:[text-shadow:0_0_10px_hsl(0_0%_100%/0.7),0_0_20px_hsl(var(--primary)/0.35)]"
         >
           Unload your career worries from your organic neural engine into Path4U's Enhanced Neural Engine. Let AI chart the path from uncertainty to opportunity.
         </motion.p>
