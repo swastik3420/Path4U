@@ -10,11 +10,11 @@ interface HeroProps {
 }
 
 const roleChips = [
-  { icon: BarChart3, label: "Data Scientist", left: "2%", top: "14%" },
-  { icon: BrainCircuit, label: "AI Engineer", left: "20%", top: "2%" },
-  { icon: Users, label: "Product Manager", left: "44%", top: "-4%" },
-  { icon: Shield, label: "Cybersecurity", left: "70%", top: "2%" },
-  { icon: Cloud, label: "Cloud Architect", left: "88%", top: "14%" },
+  { icon: BarChart3, label: "Data Scientist", position: "left-[18%] md:left-[8%] top-[18%]" },
+  { icon: BrainCircuit, label: "AI Engineer", position: "left-[30%] md:left-[22%] top-[4%]" },
+  { icon: Users, label: "Product Manager", position: "left-[46%] md:left-[44%] top-[2%]" },
+  { icon: Shield, label: "Cybersecurity", position: "left-[62%] md:left-[68%] top-[4%]" },
+  { icon: Cloud, label: "Cloud Architect", position: "left-[76%] md:left-[80%] top-[18%]" },
 ];
 
 const trustedLogos = ["Google", "Microsoft", "Amazon", "Netflix", "Meta", "Adobe"];
@@ -221,15 +221,16 @@ const Hero = ({ onGetStarted }: HeroProps) => {
                 initial={{ opacity: 0, y: -20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.6 + i * 0.08 }}
-                whileHover={{ scale: 1.08, y: -4 }}
-                whileTap={{ scale: 0.95 }}
-                tabIndex={0}
-                role="button"
-                className="group absolute glass rounded-full px-3 py-1.5 md:px-4 md:py-2 flex items-center gap-2 border border-primary/30 shadow-[0_0_20px_hsl(var(--primary)/0.25)] -translate-x-1/2 cursor-pointer transition-colors duration-300 hover:border-primary/70 hover:bg-primary/10 hover:shadow-[0_0_30px_hsl(var(--primary)/0.55)] active:bg-primary/20 active:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
-                style={{ top: chip.top, left: chip.left }}
+                className={`absolute ${chip.position}`}
               >
-                <chip.icon className="w-3.5 h-3.5 md:w-4 md:h-4 text-primary transition-transform duration-300 group-hover:scale-110 group-active:scale-95" />
-                <span className="text-xs md:text-sm font-medium text-foreground whitespace-nowrap transition-colors duration-300 group-hover:text-primary">{chip.label}</span>
+                <div
+                  tabIndex={0}
+                  role="button"
+                  className="group glass rounded-full px-1.5 py-0.5 sm:px-2 sm:py-1 md:px-2.5 md:py-1.5 flex items-center gap-1 sm:gap-1.5 border border-primary/30 shadow-[0_0_14px_hsl(var(--primary)/0.25)] -translate-x-1/2 cursor-pointer transition-all duration-300 hover:scale-110 hover:-translate-y-1 hover:border-primary/70 hover:bg-primary/10 hover:shadow-[0_0_24px_hsl(var(--primary)/0.55)] active:scale-95 active:bg-primary/20 active:border-primary focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/60"
+                >
+                  <chip.icon className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-3.5 md:h-3.5 text-primary transition-transform duration-300 group-hover:scale-110 group-active:scale-95" />
+                  <span className="text-[9px] sm:text-[10px] md:text-xs font-medium text-foreground whitespace-nowrap transition-colors duration-300 group-hover:text-primary">{chip.label}</span>
+                </div>
               </motion.div>
             ))}
 
