@@ -18,6 +18,8 @@ const buttonVariants = cva(
         hero: "gradient-primary text-primary-foreground shadow-lg hover:shadow-xl hover:scale-105 transform",
         "hero-outline": "border-2 border-primary bg-transparent text-primary hover:bg-primary hover:text-primary-foreground",
         success: "bg-success text-success-foreground hover:bg-success/90 shadow-md",
+        "success-outline": "border-2 border-success bg-transparent text-success hover:bg-success hover:text-success-foreground",
+
       },
       size: {
         default: "h-10 px-4 py-2",
