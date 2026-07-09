@@ -168,7 +168,7 @@ serve(async (req) => {
   }
 
   try {
-    const { skills, experienceLevel, jobTitles, industries } = await req.json();
+    const { skills, experienceLevel, jobTitles, industries, predictedRoles } = await req.json();
 
     if (!Array.isArray(skills)) {
       return new Response(JSON.stringify({ error: 'skills must be an array' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -180,6 +180,13 @@ serve(async (req) => {
     const boundedSkills = skills.slice(0, 50).map((s: any) => typeof s === 'string' ? s.slice(0, 200) : { ...s, name: trunc(s?.name, 200), skill: trunc(s?.skill, 200) });
     const boundedJobTitles = Array.isArray(jobTitles) ? jobTitles.slice(0, 20).map((i: any) => trunc(i, 150)) : [];
     const boundedExperience = typeof experienceLevel === 'string' ? experienceLevel.slice(0, 100) : experienceLevel;
+    const boundedPredictedRoles = Array.isArray(predictedRoles)
+      ? predictedRoles
+          .filter((r: any) => r && typeof r.role === 'string')
+          .slice(0, 10)
+          .map((r: any) => ({ role: trunc(r.role, 150) as string, probability: Number(r.probability) || 0 }))
+          .sort((a: any, b: any) => b.probability - a.probability)
+      : [];
 
     // Fetch company-posted jobs from database (already-authentic, direct-employer)
     const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!);
