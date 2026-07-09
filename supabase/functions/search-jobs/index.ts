@@ -168,7 +168,7 @@ serve(async (req) => {
   }
 
   try {
-    const { skills, experienceLevel, jobTitles, industries } = await req.json();
+    const { skills, experienceLevel, jobTitles, industries, predictedRoles } = await req.json();
 
     if (!Array.isArray(skills)) {
       return new Response(JSON.stringify({ error: 'skills must be an array' }), { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
@@ -180,6 +180,13 @@ serve(async (req) => {
     const boundedSkills = skills.slice(0, 50).map((s: any) => typeof s === 'string' ? s.slice(0, 200) : { ...s, name: trunc(s?.name, 200), skill: trunc(s?.skill, 200) });
     const boundedJobTitles = Array.isArray(jobTitles) ? jobTitles.slice(0, 20).map((i: any) => trunc(i, 150)) : [];
     const boundedExperience = typeof experienceLevel === 'string' ? experienceLevel.slice(0, 100) : experienceLevel;
+    const boundedPredictedRoles = Array.isArray(predictedRoles)
+      ? predictedRoles
+          .filter((r: any) => r && typeof r.role === 'string')
+          .slice(0, 10)
+          .map((r: any) => ({ role: trunc(r.role, 150) as string, probability: Number(r.probability) || 0 }))
+          .sort((a: any, b: any) => b.probability - a.probability)
+      : [];
 
     // Fetch company-posted jobs from database (already-authentic, direct-employer)
     const supabase = createClient(Deno.env.get('SUPABASE_URL')!, Deno.env.get('SUPABASE_ANON_KEY')!);
@@ -229,80 +236,104 @@ serve(async (req) => {
         .map((s: any) => s.name || s.skill)
         .filter(Boolean);
 
-      const primaryTitle = boundedJobTitles[0] || topSkills[0] || 'Software Engineer';
-      const queryStr = [primaryTitle, topSkills.slice(0, 2).join(' ')].filter(Boolean).join(' ');
+      // Build one query per likely role (weighted by probability) so we surface
+      // openings for every role the user has a real shot at — not just one.
+      const roleQueries: { query: string; weight: number }[] = [];
+      const seenQ = new Set<string>();
+      const pushQuery = (q: string, weight: number) => {
+        const key = q.trim().toLowerCase();
+        if (!key || seenQ.has(key)) return;
+        seenQ.add(key);
+        roleQueries.push({ query: q, weight });
+      };
+      for (const r of boundedPredictedRoles) {
+        if (r.probability >= 20) pushQuery(r.role, r.probability);
+      }
+      for (const t of boundedJobTitles) pushQuery(t as string, 50);
+      if (!roleQueries.length) {
+        pushQuery([topSkills[0] || 'Software Engineer', topSkills.slice(1, 3).join(' ')].filter(Boolean).join(' '), 40);
+      }
+      // Cap to keep RapidAPI usage bounded (each query = 1 page).
+      const queriesToRun = roleQueries.slice(0, 5);
 
-      const params = new URLSearchParams({
-        query: queryStr,
-        page: '1',
-        num_pages: '2',
-        date_posted: 'week', // JSearch: 'all' | 'today' | '3days' | 'week' | 'month' — 'week' keeps freshness tight
+      const now = Date.now();
+      const collected: any[] = [];
+
+      await Promise.all(queriesToRun.map(async ({ query, weight }) => {
+        const params = new URLSearchParams({
+          query,
+          page: '1',
+          num_pages: '1',
+          date_posted: 'week',
+        });
+        try {
+          const jsRes = await fetch(`https://jsearch.p.rapidapi.com/search?${params.toString()}`, {
+            headers: {
+              'X-RapidAPI-Key': RAPIDAPI_KEY,
+              'X-RapidAPI-Host': 'jsearch.p.rapidapi.com',
+            },
+          });
+          if (!jsRes.ok) {
+            const body = await jsRes.text();
+            console.error(`JSearch failed for "${query}" [${jsRes.status}]: ${body.slice(0, 300)}`);
+            return;
+          }
+          const jsData = await jsRes.json();
+          const raw: any[] = Array.isArray(jsData?.data) ? jsData.data : [];
+          for (const j of raw) {
+            const applyLink = j.job_apply_link || j.job_google_link || '';
+            const postedMs = j.job_posted_at_timestamp ? j.job_posted_at_timestamp * 1000 : null;
+            const baseMatch = scoreTextMatch(
+              `${j.job_title || ''} ${j.job_description || ''} ${(j.job_required_skills || []).join(' ')}`,
+              userSkills,
+            );
+            // Blend skill-match with role probability so higher-probability roles rank higher.
+            const match = Math.min(99, Math.round(baseMatch * 0.7 + weight * 0.3));
+            collected.push({
+              title: j.job_title,
+              company: j.employer_name || 'Unknown',
+              location: [j.job_city, j.job_state, j.job_country].filter(Boolean).join(', ') || 'Remote',
+              type: j.job_employment_type || 'Full-time',
+              match,
+              url: applyLink,
+              source: j.job_publisher || hostOf(applyLink) || 'Web',
+              postedDate: j.job_posted_at_datetime_utc || (postedMs ? new Date(postedMs).toISOString() : 'Recent'),
+              postedMs,
+              salaryMin: j.job_min_salary,
+              salaryMax: j.job_max_salary,
+              workMode: j.job_is_remote ? 'Remote' : (j.job_employment_type || ''),
+              isCompanyJob: false,
+              skillsRequired: j.job_required_skills || [],
+              experienceLevel: j.job_required_experience?.required_experience_in_months
+                ? `${Math.round(j.job_required_experience.required_experience_in_months / 12)}+ yrs`
+                : undefined,
+              _forRole: query,
+            });
+          }
+        } catch (e) {
+          console.error(`JSearch fetch error for "${query}":`, e);
+        }
+      }));
+
+      const normalized = collected
+        .filter(j => j.url && j.title && j.company)
+        .filter(j => !j.postedMs || (now - j.postedMs) <= MS_14_DAYS)
+        .filter(j => !isBlockedDomain(j.url));
+
+      const seen = new Set<string>();
+      const deduped = normalized.filter(j => {
+        const key = `${j.title.toLowerCase().trim()}|${j.company.toLowerCase().trim()}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
       });
 
-      try {
-        const jsRes = await fetch(`https://jsearch.p.rapidapi.com/search?${params.toString()}`, {
-          headers: {
-            'X-RapidAPI-Key': RAPIDAPI_KEY,
-            'X-RapidAPI-Host': 'jsearch.p.rapidapi.com',
-          },
-        });
-
-        if (!jsRes.ok) {
-          const body = await jsRes.text();
-          console.error(`JSearch failed [${jsRes.status}]: ${body.slice(0, 500)}`);
-        } else {
-          const jsData = await jsRes.json();
-          const now = Date.now();
-          const raw: any[] = Array.isArray(jsData?.data) ? jsData.data : [];
-
-          // 1. Basic normalize + 14-day filter + ghost-domain filter
-          const normalized = raw
-            .map((j: any) => {
-              const applyLink = j.job_apply_link || j.job_google_link || '';
-              const postedMs = j.job_posted_at_timestamp ? j.job_posted_at_timestamp * 1000 : null;
-              return {
-                title: j.job_title,
-                company: j.employer_name || 'Unknown',
-                location: [j.job_city, j.job_state, j.job_country].filter(Boolean).join(', ') || 'Remote',
-                type: j.job_employment_type || 'Full-time',
-                match: scoreTextMatch(`${j.job_title || ''} ${j.job_description || ''} ${(j.job_required_skills || []).join(' ')}`, userSkills),
-                url: applyLink,
-                source: j.job_publisher || hostOf(applyLink) || 'Web',
-                postedDate: j.job_posted_at_datetime_utc || (postedMs ? new Date(postedMs).toISOString() : 'Recent'),
-                postedMs,
-                salaryMin: j.job_min_salary,
-                salaryMax: j.job_max_salary,
-                workMode: j.job_is_remote ? 'Remote' : (j.job_employment_type || ''),
-                isCompanyJob: false,
-                skillsRequired: j.job_required_skills || [],
-                experienceLevel: j.job_required_experience?.required_experience_in_months
-                  ? `${Math.round(j.job_required_experience.required_experience_in_months / 12)}+ yrs`
-                  : undefined,
-              };
-            })
-            .filter(j => j.url && j.title && j.company)
-            .filter(j => !j.postedMs || (now - j.postedMs) <= MS_14_DAYS)
-            .filter(j => !isBlockedDomain(j.url));
-
-          // 2. Dedupe by title+company (drops reposts)
-          const seen = new Set<string>();
-          const deduped = normalized.filter(j => {
-            const key = `${j.title.toLowerCase().trim()}|${j.company.toLowerCase().trim()}`;
-            if (seen.has(key)) return false;
-            seen.add(key);
-            return true;
-          });
-
-          // 3. HEAD-check apply links in parallel (bounded to 12 to protect quota/time)
-          const candidates = deduped.sort((a, b) => b.match - a.match).slice(0, 12);
-          const aliveFlags = await Promise.all(candidates.map(j => isLinkAlive(j.url)));
-          liveJobs = candidates
-            .filter((_, i) => aliveFlags[i])
-            .map(({ postedMs, ...rest }) => rest);
-        }
-      } catch (e) {
-        console.error('JSearch fetch error:', e);
-      }
+      // Keep more candidates now that we search across many roles.
+      const candidates = deduped.sort((a, b) => b.match - a.match).slice(0, 30);
+      const aliveFlags = await Promise.all(candidates.map(j => isLinkAlive(j.url)));
+      liveJobs = candidates
+        .filter((_, i) => aliveFlags[i])
+        .map(({ postedMs, _forRole, ...rest }) => rest);
     } else {
       console.warn('RAPIDAPI_JSEARCH_KEY not configured — skipping live job fetch');
     }
@@ -313,10 +344,11 @@ serve(async (req) => {
         .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
         .map((s: any) => s.name || s.skill);
       const fallbackQueries = uniqueTerms([
+        ...boundedPredictedRoles.map((r: any) => r.role),
         ...boundedJobTitles,
         topSkills.slice(0, 2).join(' '),
         topSkills[0],
-      ]);
+      ], 8);
 
       const now = Date.now();
       const fallbackRaw = await fetchFallbackLiveJobs(fallbackQueries, userSkills);
@@ -332,7 +364,7 @@ serve(async (req) => {
         seen.add(key);
         return true;
       });
-      const candidates = deduped.sort((a, b) => b.match - a.match).slice(0, 16);
+      const candidates = deduped.sort((a, b) => b.match - a.match).slice(0, 30);
       const aliveFlags = await Promise.all(candidates.map(j => isLinkAlive(j.url)));
       liveJobs = candidates
         .filter((_, i) => aliveFlags[i])

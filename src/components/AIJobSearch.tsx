@@ -80,14 +80,45 @@ const AIJobSearch = ({ results, parsedResume }: AIJobSearchProps) => {
     loadApplications();
   }, [user]);
 
+
+
   const searchJobs = async () => {
     setIsLoading(true);
     try {
+      // 1. Get probability-ranked job roles first so we can widen the live search
+      //    across every likely role (not just the resume's most recent title).
+      let predictedRoles: { role: string; probability: number }[] = [];
+      try {
+        const { data: rolesData } = await supabase.functions.invoke('predict-job-roles', {
+          body: {
+            skills: results.map(r => ({ name: r.skill, score: r.score, level: r.level })),
+            experienceLevel: parsedResume?.experienceLevel || 'Unknown',
+            industries: parsedResume?.industries || [],
+            jobTitles: parsedResume?.jobTitles || [],
+          }
+        });
+        if (Array.isArray(rolesData?.roles)) predictedRoles = rolesData.roles;
+      } catch (e) {
+        console.warn('predict-job-roles failed, falling back to resume titles:', e);
+      }
+
+      // Merge predicted roles (highest probability first) with resume titles,
+      // deduped — sent to search-jobs so it fetches openings per role.
+      const rankedRoleTitles = predictedRoles
+        .slice()
+        .sort((a, b) => b.probability - a.probability)
+        .map(r => r.role);
+      const mergedTitles = Array.from(new Set([
+        ...rankedRoleTitles,
+        ...(parsedResume?.jobTitles || []),
+      ])).slice(0, 8);
+
       const { data, error } = await supabase.functions.invoke('search-jobs', {
         body: {
           skills: results.map(r => ({ name: r.skill, score: r.score, level: r.level })),
           experienceLevel: parsedResume?.experienceLevel || 'Unknown',
-          jobTitles: parsedResume?.jobTitles || [],
+          jobTitles: mergedTitles,
+          predictedRoles, // [{role, probability}]
           industries: parsedResume?.industries || [],
         }
       });
