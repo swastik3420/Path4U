@@ -46,7 +46,6 @@ const benefitLabels = [
 const stats = [
   { icon: Users, value: "100+", label: "Resume Analyzed" },
   { icon: TrendingUp, value: "95%", label: "Accuracy Rate" },
-  { icon: Crosshair, value: "10M+", label: "Data Points" },
   { icon: BrainCircuit, value: "24/7", label: "AI Guidance" },
 ];
 
