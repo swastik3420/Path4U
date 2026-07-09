@@ -134,14 +134,15 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             >
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-stretch">
                 <Button
-                  variant="outline"
+                  variant="success-outline"
                   size="xl"
                   onClick={() => setAtsOpen(true)}
-                  className="group border-2 w-full h-14 px-4 justify-center whitespace-nowrap text-sm sm:text-[15px]"
+                  className="group w-full h-14 px-4 justify-center whitespace-nowrap text-sm sm:text-[15px]"
                 >
-                  <FileSearch className="w-5 h-5 mr-2 text-primary shrink-0" />
+                  <FileSearch className="w-5 h-5 mr-2 text-success shrink-0" />
                   Check Your Resume ATS Score
                 </Button>
+
                 <Button variant="hero" size="xl" onClick={onGetStarted} className="group relative overflow-hidden w-full h-14 px-4 justify-center whitespace-nowrap text-sm sm:text-[15px]">
                   <span className="relative z-10 flex items-center gap-2">
                     Analyze My Resume
