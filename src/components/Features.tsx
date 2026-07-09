@@ -94,9 +94,10 @@ const Features = () => {
               transition={{ delay: index * 0.08, duration: 0.5 }}
               className="group relative"
             >
-              <div className={`absolute inset-0 bg-gradient-to-br ${feature.accent} rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
-              <div className="relative glass-strong rounded-2xl p-7 h-full hover:shadow-lg transition-all duration-500 group-hover:-translate-y-1">
-                <div className={`w-12 h-12 ${feature.iconBg} rounded-xl flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110`}>
+              <div className={`absolute inset-0 bg-gradient-to-br ${feature.accent} rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-500`} />
+              <div className="relative glass-strong rounded-lg p-7 h-full transition-all duration-300 group-hover:shadow-2xl group-hover:-translate-y-2">
+                <div className={`w-12 h-12 ${feature.iconBg} rounded-lg flex items-center justify-center mb-5 transition-transform duration-300 group-hover:scale-110`}>
+
                   <feature.icon className={`w-6 h-6 ${feature.iconColor}`} />
                 </div>
                 <h3 className="text-lg font-bold text-foreground mb-2 font-display">
