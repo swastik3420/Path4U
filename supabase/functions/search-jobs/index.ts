@@ -28,6 +28,11 @@ const GHOST_DOMAIN_BLOCKLIST = [
 
 const MS_14_DAYS = 14 * 24 * 60 * 60 * 1000;
 
+const fallbackHeaders = {
+  'User-Agent': 'Path4U Job Matcher/1.0 (+https://path4u.lovable.app)',
+  'Accept': 'application/json',
+};
+
 function hostOf(url: string): string {
   try { return new URL(url).hostname.replace(/^www\./, '').toLowerCase(); } catch { return ''; }
 }
@@ -36,6 +41,98 @@ function isBlockedDomain(url: string): boolean {
   const host = hostOf(url);
   if (!host) return true;
   return GHOST_DOMAIN_BLOCKLIST.some(d => host === d || host.endsWith('.' + d));
+}
+
+function uniqueTerms(values: unknown[], limit = 6): string[] {
+  const seen = new Set<string>();
+  const terms: string[] = [];
+  for (const value of values) {
+    const term = typeof value === 'string' ? value.trim() : '';
+    const key = term.toLowerCase();
+    if (term && !seen.has(key)) {
+      seen.add(key);
+      terms.push(term);
+    }
+    if (terms.length >= limit) break;
+  }
+  return terms;
+}
+
+function scoreTextMatch(text: string, userSkills: string[]): number {
+  const hay = text.toLowerCase();
+  if (!userSkills.length) return 60;
+  const hits = userSkills.filter((s: string) => s && hay.includes(s)).length;
+  return Math.min(98, 55 + Math.round((hits / userSkills.length) * 45));
+}
+
+function recentIsoFromSeconds(seconds?: number | null): string {
+  return seconds ? new Date(seconds * 1000).toISOString() : 'Recent';
+}
+
+async function fetchFallbackLiveJobs(queryTerms: string[], userSkills: string[]): Promise<any[]> {
+  const queries = queryTerms.length ? queryTerms : ['Data Analyst', 'Software Engineer'];
+  const jobs: any[] = [];
+
+  const fetchJson = async (url: string) => {
+    const res = await fetch(url, { headers: fallbackHeaders });
+    if (!res.ok) throw new Error(`${res.status} ${await res.text().then(t => t.slice(0, 120)).catch(() => '')}`);
+    return await res.json();
+  };
+
+  for (const query of queries.slice(0, 3)) {
+    const encoded = encodeURIComponent(query);
+
+    try {
+      const remotive = await fetchJson(`https://remotive.com/api/remote-jobs?search=${encoded}&limit=20`);
+      const rows = Array.isArray(remotive?.jobs) ? remotive.jobs : [];
+      for (const j of rows) {
+        const url = j.url || '';
+        jobs.push({
+          title: j.title,
+          company: j.company_name || 'Unknown',
+          location: j.candidate_required_location || 'Remote',
+          type: j.job_type || 'Full-time',
+          match: scoreTextMatch(`${j.title || ''} ${j.description || ''} ${(j.tags || []).join(' ')}`, userSkills),
+          url,
+          source: 'Remotive',
+          postedDate: j.publication_date || 'Recent',
+          postedMs: j.publication_date ? Date.parse(j.publication_date) : null,
+          workMode: 'Remote',
+          isCompanyJob: false,
+          skillsRequired: Array.isArray(j.tags) ? j.tags.slice(0, 8) : [],
+        });
+      }
+    } catch (e) {
+      console.warn(`Remotive fallback failed for "${query}":`, e);
+    }
+
+    try {
+      const arbeitnow = await fetchJson(`https://www.arbeitnow.com/api/job-board-api?search=${encoded}`);
+      const rows = Array.isArray(arbeitnow?.data) ? arbeitnow.data : [];
+      for (const j of rows.slice(0, 20)) {
+        const url = j.url || '';
+        const createdAt = typeof j.created_at === 'number' ? j.created_at : null;
+        jobs.push({
+          title: j.title,
+          company: j.company_name || 'Unknown',
+          location: j.location || (j.remote ? 'Remote' : 'Not specified'),
+          type: Array.isArray(j.job_types) && j.job_types.length ? j.job_types.join(', ') : 'Full-time',
+          match: scoreTextMatch(`${j.title || ''} ${j.description || ''} ${(j.tags || []).join(' ')}`, userSkills),
+          url,
+          source: 'Arbeitnow',
+          postedDate: recentIsoFromSeconds(createdAt),
+          postedMs: createdAt ? createdAt * 1000 : null,
+          workMode: j.remote ? 'Remote' : 'On-site',
+          isCompanyJob: false,
+          skillsRequired: Array.isArray(j.tags) ? j.tags.slice(0, 8) : [],
+        });
+      }
+    } catch (e) {
+      console.warn(`Arbeitnow fallback failed for "${query}":`, e);
+    }
+  }
+
+  return jobs;
 }
 
 // HEAD-check (falls back to GET) to drop dead links. Times out fast.
@@ -158,14 +255,6 @@ serve(async (req) => {
           const now = Date.now();
           const raw: any[] = Array.isArray(jsData?.data) ? jsData.data : [];
 
-          // Compute match score against user skills
-          const scoreJob = (j: any): number => {
-            const hay = `${j.job_title || ''} ${j.job_description || ''} ${(j.job_required_skills || []).join(' ')}`.toLowerCase();
-            if (!userSkills.length) return 60;
-            const hits = userSkills.filter((s: string) => s && hay.includes(s)).length;
-            return Math.min(98, 55 + Math.round((hits / userSkills.length) * 45));
-          };
-
           // 1. Basic normalize + 14-day filter + ghost-domain filter
           const normalized = raw
             .map((j: any) => {
@@ -176,7 +265,7 @@ serve(async (req) => {
                 company: j.employer_name || 'Unknown',
                 location: [j.job_city, j.job_state, j.job_country].filter(Boolean).join(', ') || 'Remote',
                 type: j.job_employment_type || 'Full-time',
-                match: scoreJob(j),
+                match: scoreTextMatch(`${j.job_title || ''} ${j.job_description || ''} ${(j.job_required_skills || []).join(' ')}`, userSkills),
                 url: applyLink,
                 source: j.job_publisher || hostOf(applyLink) || 'Web',
                 postedDate: j.job_posted_at_datetime_utc || (postedMs ? new Date(postedMs).toISOString() : 'Recent'),
@@ -216,6 +305,38 @@ serve(async (req) => {
       }
     } else {
       console.warn('RAPIDAPI_JSEARCH_KEY not configured — skipping live job fetch');
+    }
+
+    if (liveJobs.length === 0) {
+      const topSkills = boundedSkills
+        .slice()
+        .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
+        .map((s: any) => s.name || s.skill);
+      const fallbackQueries = uniqueTerms([
+        ...boundedJobTitles,
+        topSkills.slice(0, 2).join(' '),
+        topSkills[0],
+      ]);
+
+      const now = Date.now();
+      const fallbackRaw = await fetchFallbackLiveJobs(fallbackQueries, userSkills);
+      const fallbackNormalized = fallbackRaw
+        .filter(j => j.url && j.title && j.company)
+        .filter(j => !j.postedMs || (now - j.postedMs) <= MS_14_DAYS)
+        .filter(j => !isBlockedDomain(j.url));
+
+      const seen = new Set<string>();
+      const deduped = fallbackNormalized.filter(j => {
+        const key = `${j.title.toLowerCase().trim()}|${j.company.toLowerCase().trim()}`;
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      const candidates = deduped.sort((a, b) => b.match - a.match).slice(0, 16);
+      const aliveFlags = await Promise.all(candidates.map(j => isLinkAlive(j.url)));
+      liveJobs = candidates
+        .filter((_, i) => aliveFlags[i])
+        .map(({ postedMs, ...rest }) => rest);
     }
 
     const allJobs = [
