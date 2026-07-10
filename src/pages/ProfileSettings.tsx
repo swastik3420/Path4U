@@ -368,7 +368,7 @@ const ProfileSettings = () => {
         {/* Certifications Section */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle role="heading" aria-level={2} className="flex items-center gap-2">
               <Award className="w-5 h-5 text-primary" />
               Certifications
             </CardTitle>
@@ -464,7 +464,7 @@ const ProfileSettings = () => {
         {/* Education Section */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle role="heading" aria-level={2} className="flex items-center gap-2">
               <GraduationCap className="w-5 h-5 text-primary" />
               Education
             </CardTitle>
@@ -527,7 +527,7 @@ const ProfileSettings = () => {
         {/* Accessibility Preferences */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle role="heading" aria-level={2} className="flex items-center gap-2">
               <ZapOff className="w-5 h-5 text-primary" />
               Accessibility
             </CardTitle>
