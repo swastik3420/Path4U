@@ -10,11 +10,11 @@ interface HeroProps {
 }
 
 const roleChips = [
-  { icon: BarChart3, label: "Data Scientist", position: "left-[22%] md:left-[12%] top-[18%]" },
-  { icon: BrainCircuit, label: "AI Engineer", position: "left-[34%] md:left-[26%] top-[4%]" },
-  { icon: Users, label: "Product Manager", position: "left-[50%] md:left-[48%] top-[2%]" },
-  { icon: Shield, label: "Cybersecurity", position: "left-[66%] md:left-[72%] top-[4%]" },
-  { icon: Cloud, label: "Cloud Architect", position: "left-[80%] md:left-[84%] top-[18%]" },
+  { icon: BarChart3, label: "Data Scientist", position: "left-[25%] md:left-[15%] top-[18%]" },
+  { icon: BrainCircuit, label: "AI Engineer", position: "left-[37%] md:left-[29%] top-[4%]" },
+  { icon: Users, label: "Product Manager", position: "left-[53%] md:left-[51%] top-[2%]" },
+  { icon: Shield, label: "Cybersecurity", position: "left-[69%] md:left-[75%] top-[4%]" },
+  { icon: Cloud, label: "Cloud Architect", position: "left-[83%] md:left-[87%] top-[18%]" },
 ];
 
 const trustedLogos = ["Google", "Microsoft", "Amazon", "Netflix", "Meta", "Adobe"];
