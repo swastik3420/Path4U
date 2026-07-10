@@ -424,6 +424,7 @@ const Dashboard = () => {
                         size="sm"
                         onClick={() => deleteAssessment(assessment.id)}
                         className="text-muted-foreground hover:text-destructive"
+                        aria-label="Delete assessment"
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

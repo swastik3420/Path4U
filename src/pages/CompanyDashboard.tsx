@@ -319,10 +319,10 @@ const CompanyDashboard = () => {
                           )}
                         </div>
                         <div className="flex items-center gap-1 shrink-0">
-                          <Button variant="ghost" size="icon" onClick={() => toggleJobActive(job.id, job.is_active)} title={job.is_active ? "Deactivate" : "Activate"}>
+                          <Button variant="ghost" size="icon" onClick={() => toggleJobActive(job.id, job.is_active)} title={job.is_active ? "Deactivate" : "Activate"} aria-label={job.is_active ? "Deactivate job listing" : "Activate job listing"}>
                             {job.is_active ? <ToggleRight className="w-4 h-4 text-secondary" /> : <ToggleLeft className="w-4 h-4" />}
                           </Button>
-                          <Button variant="ghost" size="icon" onClick={() => deleteJob(job.id)} className="text-destructive hover:text-destructive">
+                          <Button variant="ghost" size="icon" onClick={() => deleteJob(job.id)} className="text-destructive hover:text-destructive" aria-label="Delete job listing">
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>

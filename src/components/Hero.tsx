@@ -193,6 +193,8 @@ const Hero = ({ onGetStarted }: HeroProps) => {
               alt="AI-powered neural brain visualization"
               width={1024}
               height={1024}
+              fetchPriority="high"
+              decoding="async"
               className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none transition-all duration-700
                 opacity-45 blur-[0.5px] mix-blend-screen saturate-125 contrast-95 [filter:hue-rotate(155deg)_brightness(1.35)_saturate(1.4)]
                 dark:[filter:none] dark:opacity-95 dark:blur-0 dark:mix-blend-screen dark:saturate-125 dark:contrast-100

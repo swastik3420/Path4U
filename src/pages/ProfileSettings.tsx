@@ -307,15 +307,22 @@ const ProfileSettings = () => {
         <div className="bg-card rounded-2xl shadow-lg p-8 space-y-8">
           {/* Avatar */}
           <div className="flex flex-col items-center gap-4">
-            <div className="relative group cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+            <div
+              className="relative group cursor-pointer"
+              onClick={() => fileInputRef.current?.click()}
+              role="button"
+              tabIndex={0}
+              aria-label="Upload profile picture"
+              onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") fileInputRef.current?.click(); }}
+            >
               <Avatar className="w-24 h-24">
-                <AvatarImage src={avatarUrl || undefined} alt="Avatar" />
+                <AvatarImage src={avatarUrl || undefined} alt="User profile picture" />
                 <AvatarFallback className="text-2xl bg-primary/10 text-primary">{initials}</AvatarFallback>
               </Avatar>
               <div className="absolute inset-0 rounded-full bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 {isUploading ? <Loader2 className="w-6 h-6 animate-spin text-white" /> : <Camera className="w-6 h-6 text-white" />}
               </div>
-              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} aria-label="Profile picture file input" />
             </div>
             <p className="text-sm text-muted-foreground">Click to upload a new photo</p>
           </div>
@@ -361,7 +368,7 @@ const ProfileSettings = () => {
         {/* Certifications Section */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle role="heading" aria-level={2} className="flex items-center gap-2">
               <Award className="w-5 h-5 text-primary" />
               Certifications
             </CardTitle>
@@ -457,7 +464,7 @@ const ProfileSettings = () => {
         {/* Education Section */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle role="heading" aria-level={2} className="flex items-center gap-2">
               <GraduationCap className="w-5 h-5 text-primary" />
               Education
             </CardTitle>
@@ -520,7 +527,7 @@ const ProfileSettings = () => {
         {/* Accessibility Preferences */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle role="heading" aria-level={2} className="flex items-center gap-2">
               <ZapOff className="w-5 h-5 text-primary" />
               Accessibility
             </CardTitle>
