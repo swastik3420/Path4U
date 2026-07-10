@@ -188,7 +188,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
 
             {/* Brain image — watermark in light, screen-blended hologram in dark */}
             <img
-              src={heroBrainBg}
+              src="/hero-brain-bg.webp"
               alt="AI-powered neural brain visualization"
               width={1024}
               height={1024}
