@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import ATSScoreDialog from "@/components/ATSScoreDialog";
-import heroBrainBg from "@/assets/hero-brain-bg.jpg";
 
 interface HeroProps {
   onGetStarted: () => void;
