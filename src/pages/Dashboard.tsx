@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { SEO } from "@/components/SEO";
 import { 
   User, TrendingUp, Award, Calendar, ChevronRight, 
   LogOut, Loader2, Target, BookOpen, Trash2, Briefcase,
@@ -150,6 +151,12 @@ const Dashboard = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Dashboard — Path4U"
+        description="Track your career progress, skill assessments, and job applications on Path4U."
+        canonical="https://path4u.lovable.app/dashboard"
+        ogUrl="https://path4u.lovable.app/dashboard"
+      />
       <Header />
       
       <main className="pt-24 pb-16">
