@@ -3,7 +3,6 @@ import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import ATSScoreDialog from "@/components/ATSScoreDialog";
-import heroBrainBg from "@/assets/hero-brain-bg.jpg";
 
 interface HeroProps {
   onGetStarted: () => void;
@@ -189,7 +188,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
 
             {/* Brain image — watermark in light, screen-blended hologram in dark */}
             <img
-              src={heroBrainBg}
+              src="/hero-brain-bg.webp"
               alt="AI-powered neural brain visualization"
               width={1024}
               height={1024}
