@@ -1,0 +1,9 @@
+# Path4U
+
+> AI-powered career platform that scans resumes, evaluates skills through adaptive quizzes, and matches job seekers with relevant roles.
+
+Path4U helps individuals and organizations navigate tech careers. Upload a resume to extract skills and experience, take a dynamic AI assessment to benchmark abilities, and receive a personalized career roadmap with job matches. Organizations can post jobs, track candidates, and evaluate applicants through the company portal.
+
+## Pages
+
+- [Home](/): Resume scanning, skill assessment, career insights, and job matching for tech professionals.
