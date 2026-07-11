@@ -373,6 +373,45 @@ const AIJobSearch = ({ results, parsedResume }: AIJobSearchProps) => {
           })}
         </div>
       )}
+
+      {externalLinks.length > 0 && (
+        <div className="mt-8 pt-6 border-t border-border">
+          <h4 className="text-sm font-semibold text-foreground mb-1">
+            Browse on other job boards
+          </h4>
+          <p className="text-xs text-muted-foreground mb-4">
+            Curated searches on top sites for your highest-probability roles.
+          </p>
+          <div className="space-y-3">
+            {externalLinks.map((r) => (
+              <div key={r.role} className="p-3 bg-muted rounded-xl">
+                <div className="flex items-center justify-between mb-2 flex-wrap gap-2">
+                  <span className="font-medium text-sm text-foreground">{r.role}</span>
+                  {r.probability > 0 && (
+                    <span className="px-2 py-0.5 bg-secondary/20 text-secondary rounded-md text-[10px] font-medium">
+                      {Math.round(r.probability)}% match
+                    </span>
+                  )}
+                </div>
+                <div className="flex flex-wrap gap-2">
+                  {r.links.map((l) => (
+                    <a
+                      key={l.source}
+                      href={l.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 px-2.5 py-1 bg-card hover:bg-card/70 border border-border rounded-md text-xs text-foreground transition-colors"
+                    >
+                      {l.source}
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };
