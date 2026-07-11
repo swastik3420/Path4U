@@ -69,15 +69,45 @@ function recentIsoFromSeconds(seconds?: number | null): string {
   return seconds ? new Date(seconds * 1000).toISOString() : 'Recent';
 }
 
+async function fetchJson(url: string) {
+  const res = await fetch(url, { headers: fallbackHeaders });
+  if (!res.ok) throw new Error(`${res.status} ${await res.text().then(t => t.slice(0, 120)).catch(() => '')}`);
+  return await res.json();
+}
+
+async function fetchRemoteOk(userSkills: string[]): Promise<any[]> {
+  const jobs: any[] = [];
+  try {
+    const data = await fetchJson('https://remoteok.com/api');
+    const rows = Array.isArray(data) ? data.slice(1) : []; // first item is legal notice
+    for (const j of rows) {
+      const url = j.url || j.apply_url || '';
+      if (!url) continue;
+      const postedMs = j.date ? Date.parse(j.date) : null;
+      jobs.push({
+        title: j.position || j.title,
+        company: j.company || 'Unknown',
+        location: j.location || 'Remote',
+        type: 'Full-time',
+        match: scoreTextMatch(`${j.position || ''} ${j.description || ''} ${(j.tags || []).join(' ')}`, userSkills),
+        url,
+        source: 'RemoteOK',
+        postedDate: j.date || 'Recent',
+        postedMs,
+        workMode: 'Remote',
+        isCompanyJob: false,
+        skillsRequired: Array.isArray(j.tags) ? j.tags.slice(0, 8) : [],
+      });
+    }
+  } catch (e) {
+    console.warn('RemoteOK fetch failed:', e);
+  }
+  return jobs;
+}
+
 async function fetchFallbackLiveJobs(queryTerms: string[], userSkills: string[]): Promise<any[]> {
   const queries = queryTerms.length ? queryTerms : ['Data Analyst', 'Software Engineer'];
   const jobs: any[] = [];
-
-  const fetchJson = async (url: string) => {
-    const res = await fetch(url, { headers: fallbackHeaders });
-    if (!res.ok) throw new Error(`${res.status} ${await res.text().then(t => t.slice(0, 120)).catch(() => '')}`);
-    return await res.json();
-  };
 
   for (const query of queries.slice(0, 3)) {
     const encoded = encodeURIComponent(query);
@@ -132,7 +162,35 @@ async function fetchFallbackLiveJobs(queryTerms: string[], userSkills: string[])
     }
   }
 
+  // RemoteOK once (returns broad set, filter by skill match below)
+  jobs.push(...(await fetchRemoteOk(userSkills)));
+
   return jobs;
+}
+
+// Build deep-link searches on external boards for a given role. These are
+// guaranteed-live search URLs that let users browse Indeed/LinkedIn/Glassdoor/
+// Wellfound/RemoteOK/WeWorkRemotely directly for the roles we predicted.
+function buildExternalSearchLinks(roles: { role: string; probability: number }[]) {
+  const out: { role: string; probability: number; links: { source: string; url: string }[] }[] = [];
+  for (const { role, probability } of roles) {
+    const q = encodeURIComponent(role);
+    const qDash = encodeURIComponent(role.trim().toLowerCase().replace(/\s+/g, '-'));
+    out.push({
+      role,
+      probability,
+      links: [
+        { source: 'Indeed',         url: `https://www.indeed.com/jobs?q=${q}` },
+        { source: 'LinkedIn',       url: `https://www.linkedin.com/jobs/search/?keywords=${q}` },
+        { source: 'Glassdoor',      url: `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${q}` },
+        { source: 'Wellfound',      url: `https://wellfound.com/role/${qDash}` },
+        { source: 'RemoteOK',       url: `https://remoteok.com/remote-${qDash}-jobs` },
+        { source: 'WeWorkRemotely', url: `https://weworkremotely.com/remote-jobs/search?term=${q}` },
+        { source: 'Naukri',         url: `https://www.naukri.com/${qDash}-jobs` },
+      ],
+    });
+  }
+  return out;
 }
 
 // HEAD-check (falls back to GET) to drop dead links. Times out fast.
@@ -371,13 +429,38 @@ serve(async (req) => {
         .map(({ postedMs, ...rest }) => rest);
     }
 
+    // Also always attempt RemoteOK enrichment (free, public API) so remote-first
+    // users see openings from that board in addition to JSearch aggregators.
+    try {
+      const now = Date.now();
+      const remoteOk = await fetchRemoteOk(userSkills);
+      const existing = new Set(liveJobs.map(j => `${j.title?.toLowerCase().trim()}|${j.company?.toLowerCase().trim()}`));
+      const extra = remoteOk
+        .filter(j => j.url && j.title && j.company)
+        .filter(j => !j.postedMs || (now - j.postedMs) <= MS_14_DAYS)
+        .filter(j => !existing.has(`${j.title.toLowerCase().trim()}|${j.company.toLowerCase().trim()}`))
+        .sort((a, b) => b.match - a.match)
+        .slice(0, 10)
+        .map(({ postedMs, ...rest }) => rest);
+      liveJobs = [...liveJobs, ...extra];
+    } catch (e) {
+      console.warn('RemoteOK enrichment failed:', e);
+    }
+
+    // Build browse-on-external-boards links for the top predicted roles so
+    // users can jump to Indeed, LinkedIn, Glassdoor, Wellfound, RemoteOK, WWR, Naukri.
+    const rolesForLinks = boundedPredictedRoles.length
+      ? boundedPredictedRoles.slice(0, 5)
+      : (boundedJobTitles as string[]).slice(0, 3).map((r) => ({ role: r, probability: 50 }));
+    const externalSearchLinks = buildExternalSearchLinks(rolesForLinks);
+
     const allJobs = [
       ...companyJobs.sort((a: any, b: any) => b.match - a.match),
       ...liveJobs,
     ];
 
     return new Response(
-      JSON.stringify({ jobs: allJobs, liveCount: liveJobs.length, companyCount: companyJobs.length }),
+      JSON.stringify({ jobs: allJobs, liveCount: liveJobs.length, companyCount: companyJobs.length, externalSearchLinks }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
