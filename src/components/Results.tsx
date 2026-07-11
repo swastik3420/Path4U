@@ -12,6 +12,7 @@ import JobRoleProbability from "@/components/JobRoleProbability";
 import AIJobSearch from "@/components/AIJobSearch";
 import CareerRoadmap from "@/components/CareerRoadmap";
 import SkillGapAnalysis from "@/components/SkillGapAnalysis";
+import SalaryInsights from "@/components/SalaryInsights";
 import RecommendedSkills from "@/components/RecommendedSkills";
 
 interface SkillResult {
@@ -272,6 +273,11 @@ const Results = ({ results, onRestart, parsedResume }: ResultsProps) => {
           {/* Row 5.5: Skill Gap Analysis */}
           <div className="mb-8">
             <SkillGapAnalysis results={results} parsedResume={parsedResume} />
+          </div>
+
+          {/* Row 5.6: Salary for Job Roles */}
+          <div className="mb-8">
+            <SalaryInsights results={results} parsedResume={parsedResume} />
           </div>
 
           {/* Row 6: Skills to Learn with Course Links */}
