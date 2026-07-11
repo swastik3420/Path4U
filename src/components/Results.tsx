@@ -275,6 +275,11 @@ const Results = ({ results, onRestart, parsedResume }: ResultsProps) => {
             <SkillGapAnalysis results={results} parsedResume={parsedResume} />
           </div>
 
+          {/* Row 5.6: Salary for Job Roles */}
+          <div className="mb-8">
+            <SalaryInsights results={results} parsedResume={parsedResume} />
+          </div>
+
           {/* Row 6: Skills to Learn with Course Links */}
           <div className="mb-8">
             <RecommendedSkills results={results} />
