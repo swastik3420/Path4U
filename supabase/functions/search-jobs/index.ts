@@ -725,9 +725,32 @@ serve(async (req) => {
       ];
     }
 
-    // Final ordering: rank by match desc so the "Probability of Job Role"
-    // signal drives which cards the user sees first.
-    liveJobs = liveJobs.sort((a: any, b: any) => (b.match || 0) - (a.match || 0)).slice(0, 10);
+    // Diversify: round-robin across predicted roles so the final 10 include
+    // jobs for the WHOLE probability spectrum (not only the top role). Within
+    // each role bucket, keep highest-match first.
+    const roleOrder = rolesForLinks.map(r => r.role);
+    const buckets = new Map<string, any[]>();
+    for (const r of roleOrder) buckets.set(r, []);
+    buckets.set('__other__', []);
+    for (const j of liveJobs.sort((a: any, b: any) => (b.match || 0) - (a.match || 0))) {
+      const key = roleOrder.includes(j._forRole) ? j._forRole : '__other__';
+      buckets.get(key)!.push(j);
+    }
+    const diversified: any[] = [];
+    const keys = [...roleOrder, '__other__'];
+    let added = true;
+    while (diversified.length < 10 && added) {
+      added = false;
+      for (const k of keys) {
+        const bucket = buckets.get(k)!;
+        if (bucket.length) {
+          diversified.push(bucket.shift());
+          added = true;
+          if (diversified.length >= 10) break;
+        }
+      }
+    }
+    liveJobs = diversified.map(({ _forRole, ...rest }) => rest);
 
     const allJobs = [
       ...companyJobs.sort((a: any, b: any) => b.match - a.match),
