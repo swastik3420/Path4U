@@ -651,11 +651,11 @@ serve(async (req) => {
       });
 
       // Keep more candidates now that we search across many roles.
-      const candidates = deduped.sort((a, b) => b.match - a.match).slice(0, 30);
+      const candidates = deduped.sort((a, b) => b.match - a.match).slice(0, 40);
       const aliveFlags = await Promise.all(candidates.map(j => isLinkAlive(j.url)));
       liveJobs = candidates
         .filter((_, i) => aliveFlags[i])
-        .map(({ postedMs, _forRole, ...rest }) => rest);
+        .map(({ postedMs, ...rest }) => rest);
     } else {
       console.warn('RAPIDAPI_JSEARCH_KEY not configured — skipping live job fetch');
     }
