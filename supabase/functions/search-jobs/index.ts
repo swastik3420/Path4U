@@ -60,10 +60,23 @@ function uniqueTerms(values: unknown[], limit = 6): string[] {
 
 function scoreTextMatch(text: string, userSkills: string[]): number {
   const hay = text.toLowerCase();
-  if (!userSkills.length) return 60;
+  if (!userSkills.length) return 55;
   const hits = userSkills.filter((s: string) => s && hay.includes(s)).length;
-  return Math.min(98, 55 + Math.round((hits / userSkills.length) * 45));
+  return Math.min(98, 45 + Math.round((hits / userSkills.length) * 50));
 }
+
+// Return true if text contains any of the role title tokens (>3 chars).
+function textMatchesAnyRole(text: string, roleTitles: string[]): boolean {
+  if (!roleTitles.length) return true;
+  const hay = text.toLowerCase();
+  return roleTitles.some(r => {
+    const tokens = r.toLowerCase().split(/[^a-z0-9+#.]+/).filter(t => t.length > 3);
+    if (!tokens.length) return hay.includes(r.toLowerCase());
+    // require at least one meaningful token overlap
+    return tokens.some(t => hay.includes(t));
+  });
+}
+
 
 function recentIsoFromSeconds(seconds?: number | null): string {
   return seconds ? new Date(seconds * 1000).toISOString() : 'Recent';
