@@ -179,8 +179,10 @@ function buildBoardSearchCards(
   const rankedRoles = roles.length ? roles : [{ role: 'Software Engineer', probability: 45 }];
   const skillsRequired = Array.from(new Set(userSkills.flatMap(s => comparableTokens(s)))).slice(0, 5);
 
-  for (const role of rankedRoles.slice(0, 5)) {
-    for (const source of PREFERRED_JOB_BOARDS) {
+  // Interleave source-then-role so cards represent the whole probability
+  // spectrum, not just the top role.
+  for (const source of PREFERRED_JOB_BOARDS) {
+    for (const role of rankedRoles.slice(0, 6)) {
       const title = `${role.role} jobs`;
       const company = `${source} live listings`;
       const key = `${title.toLowerCase()}|${company.toLowerCase()}`;
@@ -198,6 +200,7 @@ function buildBoardSearchCards(
         workMode: 'Remote / On-site',
         isCompanyJob: false,
         skillsRequired,
+        _forRole: role.role,
       });
       if (cards.length >= limit) return cards;
     }
@@ -212,24 +215,28 @@ function ensurePreferredBoardCoverage(
   userSkills: string[],
 ): any[] {
   const rankedRoles = roles.length ? roles : [{ role: 'Software Engineer', probability: 45 }];
-  const topRole = rankedRoles[0];
   const skillsRequired = Array.from(new Set(userSkills.flatMap(s => comparableTokens(s)))).slice(0, 5);
   const covered = new Set(jobs.map(j => normalizeSource(j.source, j.url)));
   const additions = PREFERRED_JOB_BOARDS
     .filter(source => !covered.has(source))
-    .map(source => ({
-      title: `${topRole.role} jobs`,
-      company: `${source} live listings`,
-      location: source === 'Naukri' ? 'India / Remote' : 'Worldwide / Remote',
-      type: 'Live job board search',
-      match: Math.min(98, Math.max(50, Math.round(topRole.probability))),
-      url: boardSearchUrl(source, topRole.role),
-      source,
-      postedDate: 'Live search',
-      workMode: 'Remote / On-site',
-      isCompanyJob: false,
-      skillsRequired,
-    }));
+    .map((source, i) => {
+      // Rotate roles across uncovered boards so we don't spam the top role.
+      const role = rankedRoles[i % rankedRoles.length];
+      return {
+        title: `${role.role} jobs`,
+        company: `${source} live listings`,
+        location: source === 'Naukri' ? 'India / Remote' : 'Worldwide / Remote',
+        type: 'Live job board search',
+        match: Math.min(98, Math.max(50, Math.round(role.probability))),
+        url: boardSearchUrl(source, role.role),
+        source,
+        postedDate: 'Live search',
+        workMode: 'Remote / On-site',
+        isCompanyJob: false,
+        skillsRequired,
+        _forRole: role.role,
+      };
+    });
 
   const deduped = new Map<string, any>();
   for (const job of [...additions, ...jobs]) {
