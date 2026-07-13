@@ -699,11 +699,11 @@ serve(async (req) => {
         seen.add(key);
         return true;
       });
-      const candidates = deduped.sort((a, b) => b.match - a.match).slice(0, 30);
+      const candidates = deduped.sort((a, b) => b.match - a.match).slice(0, 40);
       const aliveFlags = await Promise.all(candidates.map(j => isLinkAlive(j.url)));
       liveJobs = candidates
         .filter((_, i) => aliveFlags[i])
-        .map(({ postedMs, _base, _weight, _forRole, ...rest }) => rest);
+        .map(({ postedMs, _base, _weight, ...rest }) => rest);
     }
 
     // Build browse-on-external-boards links for the top predicted roles so
