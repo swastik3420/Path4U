@@ -27,3 +27,6 @@ verify_jwt = false
 
 [functions.salary-insights]
 verify_jwt = false
+
+[functions.best-time-switch]
+verify_jwt = false

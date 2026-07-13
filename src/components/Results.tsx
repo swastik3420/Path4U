@@ -13,6 +13,7 @@ import AIJobSearch from "@/components/AIJobSearch";
 import CareerRoadmap from "@/components/CareerRoadmap";
 import SkillGapAnalysis from "@/components/SkillGapAnalysis";
 import SalaryInsights from "@/components/SalaryInsights";
+import BestTimeToSwitch from "@/components/BestTimeToSwitch";
 import RecommendedSkills from "@/components/RecommendedSkills";
 
 interface SkillResult {
@@ -279,6 +280,12 @@ const Results = ({ results, onRestart, parsedResume }: ResultsProps) => {
           <div className="mb-8">
             <SalaryInsights results={results} parsedResume={parsedResume} />
           </div>
+
+          {/* Row 5.7: Best Time to Switch */}
+          <div className="mb-8">
+            <BestTimeToSwitch results={results} parsedResume={parsedResume} />
+          </div>
+
 
           {/* Row 6: Skills to Learn with Course Links */}
           <div className="mb-8">
