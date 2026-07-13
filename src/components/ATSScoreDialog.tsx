@@ -138,11 +138,11 @@ const ATSScoreDialog = ({ open, onOpenChange }: ATSScoreDialogProps) => {
               onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
               onDragOver={(e) => { e.preventDefault(); }}
               onDrop={onDrop}
-              className={`relative border-2 border-dashed rounded-xl p-10 text-center transition-colors ${
+              className={`relative border-2 rounded-none p-10 text-center transition-colors ${
                 isDragging ? "border-primary bg-primary/5" : "border-border bg-card"
               }`}
             >
-              <div className="w-14 h-14 gradient-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+              <div className="w-14 h-14 gradient-primary rounded-none flex items-center justify-center mx-auto mb-4">
                 <Upload className="w-7 h-7 text-primary-foreground" />
               </div>
               <h3 className="font-semibold mb-1">Drop your resume here</h3>
