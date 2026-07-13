@@ -28,6 +28,11 @@ const GHOST_DOMAIN_BLOCKLIST = [
 
 const MS_14_DAYS = 14 * 24 * 60 * 60 * 1000;
 
+const PREFERRED_JOB_BOARDS = ['Indeed', 'Glassdoor', 'Wellfound', 'RemoteOK', 'WeWorkRemotely', 'Naukri'];
+
+const TWO_LETTER_SKILL_TOKENS = new Set(['ai', 'ml', 'bi', 'ui', 'ux', 'qa', 'js', 'ts']);
+const ROLE_STOP_WORDS = new Set(['senior', 'junior', 'jr', 'lead', 'principal', 'entry', 'level', 'remote', 'internship', 'intern']);
+
 const fallbackHeaders = {
   'User-Agent': 'Path4U Job Matcher/1.0 (+https://path4u.lovable.app)',
   'Accept': 'application/json',
@@ -58,23 +63,147 @@ function uniqueTerms(values: unknown[], limit = 6): string[] {
   return terms;
 }
 
-function scoreTextMatch(text: string, userSkills: string[]): number {
-  const hay = text.toLowerCase();
-  if (!userSkills.length) return 55;
-  const hits = userSkills.filter((s: string) => s && hay.includes(s)).length;
-  return Math.min(98, 45 + Math.round((hits / userSkills.length) * 50));
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
-// Return true if text contains any of the role title tokens (>3 chars).
-function textMatchesAnyRole(text: string, roleTitles: string[]): boolean {
-  if (!roleTitles.length) return true;
+function comparableTokens(value: string): string[] {
+  return value
+    .toLowerCase()
+    .replace(/&/g, ' and ')
+    .split(/[^a-z0-9+#.]+/)
+    .map(t => t.trim())
+    .filter(t => (t.length > 2 || TWO_LETTER_SKILL_TOKENS.has(t)) && !ROLE_STOP_WORDS.has(t));
+}
+
+function tokenInText(token: string, hay: string): boolean {
+  if (!token) return false;
+  return new RegExp(`(^|[^a-z0-9])${escapeRegExp(token)}([^a-z0-9]|$)`, 'i').test(hay);
+}
+
+function roleTokens(role: string): string[] {
+  return Array.from(new Set(comparableTokens(role)));
+}
+
+function rolePhrase(role: string): string {
+  return role.toLowerCase().replace(/[^a-z0-9+#.]+/g, ' ').trim();
+}
+
+function bestRoleMatch(text: string, roles: { query?: string; role?: string; weight?: number; probability?: number }[]) {
+  if (!roles.length) return { role: '', weight: 45, quality: 0.5 };
+  const hay = text.toLowerCase().replace(/[^a-z0-9+#.]+/g, ' ').trim();
+  let best: { role: string; weight: number; quality: number } | null = null;
+
+  for (const item of roles) {
+    const role = String(item.query || item.role || '').trim();
+    if (!role) continue;
+    const weight = Number(item.weight ?? item.probability ?? 45) || 45;
+    const phrase = rolePhrase(role);
+    const tokens = roleTokens(role);
+    if (!tokens.length) continue;
+
+    let quality = 0;
+    if (phrase && hay.includes(phrase)) {
+      quality = 1;
+    } else {
+      const hits = tokens.filter(t => tokenInText(t, hay)).length;
+      const requiredHits = tokens.length === 1 ? 1 : 2;
+      if (hits >= requiredHits) quality = hits / tokens.length;
+    }
+
+    if (quality > 0) {
+      const currentScore = quality * weight;
+      const bestScore = best ? best.quality * best.weight : -1;
+      if (currentScore > bestScore) best = { role, weight, quality };
+    }
+  }
+
+  return best;
+}
+
+function scoreTextMatch(text: string, userSkills: string[]): number {
   const hay = text.toLowerCase();
-  return roleTitles.some(r => {
-    const tokens = r.toLowerCase().split(/[^a-z0-9+#.]+/).filter(t => t.length > 3);
-    if (!tokens.length) return hay.includes(r.toLowerCase());
-    // require at least one meaningful token overlap
-    return tokens.some(t => hay.includes(t));
-  });
+  const skillTokens = Array.from(new Set(userSkills.flatMap(s => comparableTokens(s)))).slice(0, 24);
+  if (!skillTokens.length) return 50;
+  const hits = skillTokens.filter((s: string) => tokenInText(s, hay)).length;
+  return Math.min(98, 48 + Math.round((hits / skillTokens.length) * 45));
+}
+
+function normalizeSource(publisher: string | undefined, url: string): string {
+  const raw = (publisher || '').toLowerCase();
+  const host = hostOf(url);
+  const joined = `${raw} ${host}`;
+  if (joined.includes('indeed')) return 'Indeed';
+  if (joined.includes('glassdoor')) return 'Glassdoor';
+  if (joined.includes('wellfound') || joined.includes('angel.co')) return 'Wellfound';
+  if (joined.includes('remoteok')) return 'RemoteOK';
+  if (joined.includes('weworkremotely')) return 'WeWorkRemotely';
+  if (joined.includes('naukri')) return 'Naukri';
+  if (joined.includes('remotive')) return 'Remotive';
+  if (joined.includes('himalayas')) return 'Himalayas';
+  if (joined.includes('jobicy')) return 'Jobicy';
+  if (joined.includes('arbeitnow')) return 'Arbeitnow';
+  return publisher || host || 'Web';
+}
+
+function sourceBoost(source: string): number {
+  return PREFERRED_JOB_BOARDS.includes(source) ? 6 : 2;
+}
+
+function roleSlug(role: string): string {
+  return encodeURIComponent(role.trim().toLowerCase().replace(/[^a-z0-9+#.]+/g, '-').replace(/^-|-$/g, ''));
+}
+
+function boardSearchUrl(source: string, role: string): string {
+  const q = encodeURIComponent(role);
+  const dash = roleSlug(role);
+  switch (source) {
+    case 'Indeed': return `https://www.indeed.com/jobs?q=${q}`;
+    case 'Glassdoor': return `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${q}`;
+    case 'Wellfound': return `https://wellfound.com/role/${dash}`;
+    case 'RemoteOK': return `https://remoteok.com/remote-${dash}-jobs`;
+    case 'WeWorkRemotely': return `https://weworkremotely.com/remote-jobs/search?term=${q}`;
+    case 'Naukri': return `https://www.naukri.com/${dash}-jobs`;
+    default: return `https://www.google.com/search?q=${q}+jobs`;
+  }
+}
+
+function buildBoardSearchCards(
+  roles: { role: string; probability: number }[],
+  userSkills: string[],
+  existingJobs: any[],
+  limit: number,
+): any[] {
+  const cards: any[] = [];
+  const seen = new Set(existingJobs.map(j => `${String(j.title || '').toLowerCase()}|${String(j.company || '').toLowerCase()}`));
+  const rankedRoles = roles.length ? roles : [{ role: 'Software Engineer', probability: 45 }];
+  const skillsRequired = Array.from(new Set(userSkills.flatMap(s => comparableTokens(s)))).slice(0, 5);
+
+  for (const role of rankedRoles.slice(0, 5)) {
+    for (const source of PREFERRED_JOB_BOARDS) {
+      const title = `${role.role} jobs`;
+      const company = `${source} live listings`;
+      const key = `${title.toLowerCase()}|${company.toLowerCase()}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      cards.push({
+        title,
+        company,
+        location: source === 'Naukri' ? 'India / Remote' : 'Worldwide / Remote',
+        type: 'Live job board search',
+        match: Math.min(98, Math.max(50, Math.round(role.probability))),
+        url: boardSearchUrl(source, role.role),
+        source,
+        postedDate: 'Live search',
+        workMode: 'Remote / On-site',
+        isCompanyJob: false,
+        skillsRequired,
+      });
+      if (cards.length >= limit) return cards;
+    }
+  }
+
+  return cards;
 }
 
 
@@ -236,22 +365,24 @@ async function fetchFallbackLiveJobs(
     } catch (e) { console.warn(`Himalayas "${query}":`, e); }
   }
 
-  // RemoteOK once — tag each row against the best matching role
+    // RemoteOK once — tag each row against the best matching role
   try {
     const rok = await fetchRemoteOk(userSkills);
     for (const j of rok) {
-      const best = queries.reduce((acc, q) => {
-        const t = q.query.toLowerCase();
-        const hits = (j.title || '').toLowerCase().includes(t) ? q.weight : 0;
-        return hits > acc.weight ? { query: q.query, weight: q.weight } : acc;
-      }, { query: queries[0]?.query || '', weight: 30 });
-      jobs.push({ ...j, _base: j.match, _weight: best.weight, _forRole: best.query });
+      const best = bestRoleMatch(`${j.title || ''} ${(j.skillsRequired || []).join(' ')}`, queries);
+      if (best) jobs.push({ ...j, _base: j.match, _weight: best.weight, _forRole: best.role });
     }
   } catch (e) { console.warn('RemoteOK:', e); }
 
-  // Filter out results that don't mention any predicted role token → these are
-  // the "random unrelated jobs" the user was seeing.
-  return jobs.filter(j => textMatchesAnyRole(`${j.title || ''}`, roleTitles));
+  // Filter out results that do not strongly match a predicted role. Requiring
+  // two role tokens prevents unrelated cards such as "Data Entry" for
+  // "Data Analyst" or "Educational Administrator" for "Database Administrator".
+  return jobs
+    .map(j => {
+      const match = bestRoleMatch(`${j.title || ''} ${(j.skillsRequired || []).join(' ')}`, queries);
+      return match ? { ...j, _weight: Math.max(j._weight || 0, match.weight), _forRole: match.role } : null;
+    })
+    .filter(Boolean);
 }
 
 
@@ -267,13 +398,13 @@ function buildExternalSearchLinks(roles: { role: string; probability: number }[]
       role,
       probability,
       links: [
-        { source: 'Indeed',         url: `https://www.indeed.com/jobs?q=${q}` },
+        { source: 'Indeed',         url: boardSearchUrl('Indeed', role) },
         { source: 'LinkedIn',       url: `https://www.linkedin.com/jobs/search/?keywords=${q}` },
-        { source: 'Glassdoor',      url: `https://www.glassdoor.com/Job/jobs.htm?sc.keyword=${q}` },
-        { source: 'Wellfound',      url: `https://wellfound.com/role/${qDash}` },
-        { source: 'RemoteOK',       url: `https://remoteok.com/remote-${qDash}-jobs` },
-        { source: 'WeWorkRemotely', url: `https://weworkremotely.com/remote-jobs/search?term=${q}` },
-        { source: 'Naukri',         url: `https://www.naukri.com/${qDash}-jobs` },
+        { source: 'Glassdoor',      url: boardSearchUrl('Glassdoor', role) },
+        { source: 'Wellfound',      url: boardSearchUrl('Wellfound', role) },
+        { source: 'RemoteOK',       url: boardSearchUrl('RemoteOK', role) },
+        { source: 'WeWorkRemotely', url: boardSearchUrl('WeWorkRemotely', role) },
+        { source: 'Naukri',         url: boardSearchUrl('Naukri', role) },
       ],
     });
   }
@@ -292,7 +423,9 @@ async function isLinkAlive(url: string): Promise<boolean> {
     }
     clearTimeout(t);
     if (res.status === 404 || res.status === 410 || res.status >= 500) return false;
-    return res.status < 400;
+    // Major boards often reject bot HEAD/GET checks with 401/403/429 even when
+    // the browser URL is valid, so do not discard those links.
+    return true;
   } catch {
     clearTimeout(t);
     return false;
