@@ -163,9 +163,9 @@ const ResumeUpload = ({ onFileUploaded, onStartAssessment, onResumeAnalyzed }: R
             onDrop={handleDrop}
             className={`
               relative border-2 border-dashed rounded-2xl p-12 text-center transition-all duration-300
-              ${isDragging 
-                ? "border-secondary bg-secondary/10" 
-                : file 
+              ${isDragging
+                ? "border-secondary bg-secondary/10"
+                : file
                   ? error ? "border-destructive bg-destructive/5" : "border-success bg-success/5"
                   : "border-border hover:border-secondary/50 bg-card"
               }
