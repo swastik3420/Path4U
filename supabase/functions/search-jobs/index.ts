@@ -260,7 +260,6 @@ async function fetchFallbackLiveJobs(
     ? roleQueries
     : [{ query: 'Software Engineer', weight: 40 }];
   const jobs: any[] = [];
-  const roleTitles = queries.map(q => q.query);
 
   for (const { query, weight } of queries.slice(0, 5)) {
     const encoded = encodeURIComponent(query);
@@ -393,7 +392,6 @@ function buildExternalSearchLinks(roles: { role: string; probability: number }[]
   const out: { role: string; probability: number; links: { source: string; url: string }[] }[] = [];
   for (const { role, probability } of roles) {
     const q = encodeURIComponent(role);
-    const qDash = encodeURIComponent(role.trim().toLowerCase().replace(/\s+/g, '-'));
     out.push({
       role,
       probability,
@@ -561,12 +559,18 @@ serve(async (req) => {
           for (const j of raw) {
             const applyLink = j.job_apply_link || j.job_google_link || '';
             const postedMs = j.job_posted_at_timestamp ? j.job_posted_at_timestamp * 1000 : null;
+            const source = normalizeSource(j.job_publisher, applyLink);
+            const roleMatch = bestRoleMatch(
+              `${j.job_title || ''} ${(j.job_required_skills || []).join(' ')} ${j.job_description || ''}`,
+              roleQueries,
+            );
+            if (!roleMatch) continue;
             const baseMatch = scoreTextMatch(
               `${j.job_title || ''} ${j.job_description || ''} ${(j.job_required_skills || []).join(' ')}`,
               userSkills,
             );
             // Blend skill-match with role probability so higher-probability roles rank higher.
-            const match = Math.min(99, Math.round(baseMatch * 0.7 + weight * 0.3));
+            const match = Math.min(99, Math.round(baseMatch * 0.55 + roleMatch.weight * 0.4 + sourceBoost(source)));
             collected.push({
               title: j.job_title,
               company: j.employer_name || 'Unknown',
@@ -574,7 +578,7 @@ serve(async (req) => {
               type: j.job_employment_type || 'Full-time',
               match,
               url: applyLink,
-              source: j.job_publisher || hostOf(applyLink) || 'Web',
+              source,
               postedDate: j.job_posted_at_datetime_utc || (postedMs ? new Date(postedMs).toISOString() : 'Recent'),
               postedMs,
               salaryMin: j.job_min_salary,
@@ -585,7 +589,7 @@ serve(async (req) => {
               experienceLevel: j.job_required_experience?.required_experience_in_months
                 ? `${Math.round(j.job_required_experience.required_experience_in_months / 12)}+ yrs`
                 : undefined,
-              _forRole: query,
+              _forRole: roleMatch.role,
             });
           }
         } catch (e) {
@@ -662,17 +666,26 @@ serve(async (req) => {
         .map(({ postedMs, _base, _weight, _forRole, ...rest }) => rest);
     }
 
-    // Final ordering: rank by match desc so the "Probability of Job Role"
-    // signal drives which cards the user sees first.
-    liveJobs = liveJobs.sort((a: any, b: any) => (b.match || 0) - (a.match || 0));
-
-
     // Build browse-on-external-boards links for the top predicted roles so
     // users can jump to Indeed, LinkedIn, Glassdoor, Wellfound, RemoteOK, WWR, Naukri.
     const rolesForLinks = boundedPredictedRoles.length
       ? boundedPredictedRoles.slice(0, 5)
       : (boundedJobTitles as string[]).slice(0, 3).map((r) => ({ role: r, probability: 50 }));
     const externalSearchLinks = buildExternalSearchLinks(rolesForLinks);
+
+    // Guarantee 10 visible role-ranked cards. Some requested boards do not
+    // expose scrape-safe public listing APIs, so we fill any shortfall with
+    // live search cards that open the exact predicted-role searches on those boards.
+    if (liveJobs.length < 10) {
+      liveJobs = [
+        ...liveJobs,
+        ...buildBoardSearchCards(rolesForLinks, userSkills, liveJobs, 10 - liveJobs.length),
+      ];
+    }
+
+    // Final ordering: rank by match desc so the "Probability of Job Role"
+    // signal drives which cards the user sees first.
+    liveJobs = liveJobs.sort((a: any, b: any) => (b.match || 0) - (a.match || 0)).slice(0, 10);
 
     const allJobs = [
       ...companyJobs.sort((a: any, b: any) => b.match - a.match),
