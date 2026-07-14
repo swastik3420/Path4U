@@ -87,6 +87,9 @@ const ForgotPassword = () => {
               <p className="text-muted-foreground">
                 We've sent a password reset link to <span className="font-medium text-foreground">{email}</span>. Please check your email and click the link to set a new password.
               </p>
+              <p className="text-sm text-muted-foreground">
+                Check the spam folder in case.
+              </p>
               <Button
                 variant="outline"
                 className="w-full"
