@@ -94,7 +94,7 @@ const ResetPassword = () => {
         <div className="text-center mb-8">
           <Link to="/" className="inline-flex items-center gap-2 mb-6">
             <div className="w-10 h-10 gradient-primary rounded-xl flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">CP</span>
+              <span className="text-primary-foreground font-bold text-lg leading-tight">P4U</span>
             </div>
             <span className="text-xl font-bold text-foreground">Path4U</span>
           </Link>
