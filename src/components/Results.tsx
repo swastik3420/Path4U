@@ -274,7 +274,7 @@ const Results = ({ results, onRestart, parsedResume }: ResultsProps) => {
           </motion.div>
 
           {/* Row 3: Job Role Probability */}
-          <div className="mb-8">
+          <div id="pdf-job-role-probability" className="mb-8">
             <JobRoleProbability results={results} parsedResume={parsedResume} />
           </div>
 
@@ -294,12 +294,12 @@ const Results = ({ results, onRestart, parsedResume }: ResultsProps) => {
           </div>
 
           {/* Row 5.6: Salary for Job Roles */}
-          <div className="mb-8">
+          <div id="pdf-salary-insights" className="mb-8">
             <SalaryInsights results={results} parsedResume={parsedResume} />
           </div>
 
           {/* Row 5.7: Best Time to Switch */}
-          <div className="mb-8">
+          <div id="pdf-best-time-switch" className="mb-8">
             <BestTimeToSwitch results={results} parsedResume={parsedResume} />
           </div>
 
