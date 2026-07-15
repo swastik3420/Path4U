@@ -132,6 +132,9 @@ const ResumeUpload = ({ onFileUploaded, onStartAssessment, onResumeAnalyzed }: R
       onResumeAnalyzed?.(filtered);
     }
     onStartAssessment(mode);
+  };
+
+
 
   const removeFile = () => {
     setFile(null);
