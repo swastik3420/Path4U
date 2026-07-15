@@ -80,7 +80,7 @@ const Features = () => {
             <span className="gradient-text-vivid">Level Up</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto text-lg">
-            Path4U bridges the gap between potential and market reality. Experience real-time resume intelligence coupled with interactive skill diagnostics to accelerate your career growth."
+            Path4U bridges the gap between potential and market reality. Experience real-time resume intelligence coupled with interactive skill diagnostics to accelerate your career growth.
           </p>
         </motion.div>
 
