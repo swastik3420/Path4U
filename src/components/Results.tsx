@@ -15,6 +15,7 @@ import SkillGapAnalysis from "@/components/SkillGapAnalysis";
 import SalaryInsights from "@/components/SalaryInsights";
 import BestTimeToSwitch from "@/components/BestTimeToSwitch";
 import RecommendedSkills from "@/components/RecommendedSkills";
+import DownloadInsightsPDF from "@/components/DownloadInsightsPDF";
 
 interface SkillResult {
   skill: string;
