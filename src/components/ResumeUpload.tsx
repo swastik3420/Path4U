@@ -29,6 +29,7 @@ const ResumeUpload = ({ onFileUploaded, onStartAssessment, onResumeAnalyzed }: R
   const [error, setError] = useState<string | null>(null);
   const [parsedData, setParsedData] = useState<ParsedResume | null>(null);
   const [showAllSkills, setShowAllSkills] = useState(false);
+  const [excludedSkills, setExcludedSkills] = useState<Set<string>>(new Set());
   const { toast } = useToast();
 
   const isAcceptedFile = (f: File) => {
