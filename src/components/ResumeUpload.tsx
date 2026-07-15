@@ -115,6 +115,24 @@ const ResumeUpload = ({ onFileUploaded, onStartAssessment, onResumeAnalyzed }: R
     }
   };
 
+  const handleStart = (mode: "demo" | "full") => {
+    if (parsedData && excludedSkills.size > 0) {
+      const filtered = {
+        ...parsedData,
+        skills: parsedData.skills.filter((s) => !excludedSkills.has(s.name)),
+      };
+      if (filtered.skills.length === 0) {
+        toast({
+          title: "No skills selected",
+          description: "Please keep at least one skill checked to start the assessment.",
+          variant: "destructive",
+        });
+        return;
+      }
+      onResumeAnalyzed?.(filtered);
+    }
+    onStartAssessment(mode);
+
   const removeFile = () => {
     setFile(null);
     setIsReady(false);
