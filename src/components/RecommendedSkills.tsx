@@ -36,25 +36,62 @@ const skillCourseMap: Record<string, Omit<CourseLink, 'skill' | 'reason'>> = {
   "SQL": { courseName: "SQL Tutorial", platform: "W3Schools", url: "https://www.w3schools.com/sql/", isFree: true },
   "Cybersecurity": { courseName: "Introduction to Cybersecurity", platform: "Cisco Networking Academy", url: "https://www.netacad.com/courses/cybersecurity/introduction-cybersecurity", isFree: true },
   "Data Structures": { courseName: "DSA Full Course", platform: "freeCodeCamp", url: "https://www.youtube.com/watch?v=8hly31xKli0", isFree: true },
+  "System Architecture": { courseName: "Software Architecture Course", platform: "Coursera", url: "https://www.coursera.org/learn/software-architecture", isFree: true },
+  "Redis": { courseName: "Redis University", platform: "Redis", url: "https://university.redis.com/", isFree: true },
+  "MongoDB": { courseName: "MongoDB University", platform: "MongoDB", url: "https://learn.mongodb.com/", isFree: true },
+  "PostgreSQL": { courseName: "PostgreSQL Tutorial", platform: "PostgreSQL Tutorial", url: "https://www.postgresqltutorial.com/", isFree: true },
+  "Next.js": { courseName: "Learn Next.js", platform: "Vercel", url: "https://nextjs.org/learn", isFree: true },
+  "Rust": { courseName: "The Rust Book", platform: "Rust Docs", url: "https://doc.rust-lang.org/book/", isFree: true },
+  "Go": { courseName: "Tour of Go", platform: "Go", url: "https://go.dev/tour/", isFree: true },
+  "Terraform": { courseName: "Terraform Tutorial", platform: "HashiCorp Learn", url: "https://developer.hashicorp.com/terraform/tutorials", isFree: true },
+  "Microservices": { courseName: "Microservices Patterns", platform: "Microservices.io", url: "https://microservices.io/patterns/index.html", isFree: true },
+  "Data Engineering": { courseName: "Data Engineering Zoomcamp", platform: "DataTalks.Club", url: "https://github.com/DataTalksClub/data-engineering-zoomcamp", isFree: true },
+  "LLM / GenAI": { courseName: "Generative AI for Everyone", platform: "DeepLearning.AI", url: "https://www.deeplearning.ai/courses/generative-ai-for-everyone/", isFree: true },
+  "Prompt Engineering": { courseName: "ChatGPT Prompt Engineering for Developers", platform: "DeepLearning.AI", url: "https://www.deeplearning.ai/short-courses/chatgpt-prompt-engineering-for-developers/", isFree: true },
+  "Communication": { courseName: "Improving Communication Skills", platform: "Coursera (Wharton)", url: "https://www.coursera.org/learn/wharton-communication-skills", isFree: true },
+  "Leadership": { courseName: "Leadership Principles", platform: "HarvardX", url: "https://www.edx.org/learn/leadership", isFree: true },
+  "Product Management": { courseName: "Digital Product Management", platform: "Coursera", url: "https://www.coursera.org/specializations/uva-darden-digital-product-management", isFree: true },
+  "UX Design": { courseName: "Google UX Design Certificate", platform: "Coursera", url: "https://www.coursera.org/professional-certificates/google-ux-design", isFree: false },
 };
 
 const defaultCourse = { courseName: "Explore Courses", platform: "Coursera", url: "https://www.coursera.org/search", isFree: true };
 
-const suggestedSkillsData: { skill: string; reason: string }[] = [
+const baseSuggestions: { skill: string; reason: string }[] = [
   { skill: "GraphQL", reason: "High demand in modern web development" },
   { skill: "Docker", reason: "Essential for deployment and DevOps" },
   { skill: "Testing (Jest/Vitest)", reason: "Improves code quality and employability" },
   { skill: "System Design", reason: "Required for senior roles" },
+  { skill: "LLM / GenAI", reason: "Fastest growing skill in tech hiring" },
+  { skill: "Kubernetes", reason: "Standard for cloud-native infrastructure" },
+  { skill: "TypeScript", reason: "Now default for most JS codebases" },
+  { skill: "AWS", reason: "Most in-demand cloud platform globally" },
+  { skill: "CI/CD", reason: "Core DevOps skill for modern teams" },
+  { skill: "Microservices", reason: "Common architecture in enterprise systems" },
+  { skill: "Prompt Engineering", reason: "Multiplies productivity across roles" },
+  { skill: "Communication", reason: "High-leverage soft skill for promotions" },
 ];
 
 const RecommendedSkills = ({ results }: RecommendedSkillsProps) => {
-  // Merge static suggestions with dynamic ones from low-score skills
-  const lowSkills = results
-    .filter(r => r.score < 60)
-    .slice(0, 2)
-    .map(r => ({ skill: r.skill, reason: `Improve your ${r.level} level to be more competitive` }));
+  const existingSkills = new Set(results.map(r => r.skill.toLowerCase()));
 
-  const allSkills = [...suggestedSkillsData, ...lowSkills].slice(0, 6);
+  // Weak skills the user already has (score < 60)
+  const weakSkills = results
+    .filter(r => r.score < 60)
+    .sort((a, b) => a.score - b.score)
+    .slice(0, 4)
+    .map(r => ({ skill: r.skill, reason: `Boost your ${r.level.toLowerCase()} level (${r.score}%) to be more competitive` }));
+
+  // Mid-tier skills (60-79) to sharpen
+  const midSkills = results
+    .filter(r => r.score >= 60 && r.score < 80)
+    .sort((a, b) => a.score - b.score)
+    .slice(0, 2)
+    .map(r => ({ skill: r.skill, reason: `Level up from ${r.score}% to expert tier` }));
+
+  // Curated suggestions not already in the user's skill set
+  const freshSuggestions = baseSuggestions.filter(s => !existingSkills.has(s.skill.toLowerCase()));
+
+  const allSkills = [...weakSkills, ...midSkills, ...freshSuggestions].slice(0, 12);
 
   return (
     <motion.div
@@ -75,7 +112,7 @@ const RecommendedSkills = ({ results }: RecommendedSkillsProps) => {
               key={item.skill}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7 + index * 0.1 }}
+              transition={{ delay: 0.7 + index * 0.05 }}
               className="p-4 bg-muted rounded-xl flex flex-col justify-between"
             >
               <div>
