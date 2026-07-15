@@ -332,15 +332,18 @@ const ResumeUpload = ({ onFileUploaded, onStartAssessment, onResumeAnalyzed }: R
               className="mt-6 text-center space-y-3"
             >
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button variant="hero" size="lg" onClick={() => onStartAssessment("full")}>
+                <Button variant="hero" size="lg" onClick={() => handleStart("full")}>
                   Start Full Assessment (30 Q)
                 </Button>
-                <Button variant="outline" size="lg" onClick={() => onStartAssessment("demo")}>
+                <Button variant="outline" size="lg" onClick={() => handleStart("demo")}>
                   Try Demo Mode (5 Q)
                 </Button>
               </div>
               <p className="text-xs text-muted-foreground">
                 Demo mode is a quick 5-question preview. Full assessment gives accurate skill scoring.
+              </p>
+              <p className="text-xs text-muted-foreground max-w-md mx-auto">
+                Note: You can uncheck any skill in the box above for any skill you think are not immediately confident about, and it will not be asked in the questions.
               </p>
             </motion.div>
           )}
