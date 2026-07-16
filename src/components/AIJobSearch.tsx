@@ -331,6 +331,80 @@ const AIJobSearch = ({ results, parsedResume }: AIJobSearchProps) => {
                 </div>
               </div>
             </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Experience Level</label>
+              <Select value={experienceLevel} onValueChange={setExperienceLevel}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Levels</SelectItem>
+                  <SelectItem value="intern">Intern / Trainee</SelectItem>
+                  <SelectItem value="entry">Entry-level</SelectItem>
+                  <SelectItem value="mid">Mid-level</SelectItem>
+                  <SelectItem value="senior">Senior</SelectItem>
+                  <SelectItem value="lead">Lead / Principal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Job Type</label>
+              <Select value={jobType} onValueChange={setJobType}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Types</SelectItem>
+                  <SelectItem value="full">Full-time</SelectItem>
+                  <SelectItem value="part">Part-time</SelectItem>
+                  <SelectItem value="contract">Contract</SelectItem>
+                  <SelectItem value="internship">Internship</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                <Clock className="w-3 h-3 inline mr-1" />Date Posted
+              </label>
+              <Select value={datePosted} onValueChange={setDatePosted}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Anytime</SelectItem>
+                  <SelectItem value="1">Last 24 hours</SelectItem>
+                  <SelectItem value="3">Last 3 days</SelectItem>
+                  <SelectItem value="7">Last 7 days</SelectItem>
+                  <SelectItem value="14">Last 14 days</SelectItem>
+                  <SelectItem value="30">Last 30 days</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-medium text-muted-foreground mb-1.5 block">
+                <Building2 className="w-3 h-3 inline mr-1" />Company Type
+              </label>
+              <Select value={companyType} onValueChange={setCompanyType}>
+                <SelectTrigger className="h-9"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Companies</SelectItem>
+                  <SelectItem value="corporate">Corporate</SelectItem>
+                  <SelectItem value="foreign-mnc">Foreign MNC</SelectItem>
+                  <SelectItem value="indian-mnc">Indian MNC</SelectItem>
+                  <SelectItem value="startup">Startup</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="flex justify-end pt-2 border-t border-border/40">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setWorkMode("all");
+                setExperienceLevel("all");
+                setJobType("all");
+                setDatePosted("all");
+                setCompanyType("all");
+                setSalaryRange([0, salaryMax]);
+              }}
+            >
+              Reset filters
+            </Button>
           </div>
         </motion.div>
       )}
