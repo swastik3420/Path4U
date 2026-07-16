@@ -183,8 +183,8 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             transition={{ duration: 1.2, delay: 0.2 }}
             className="relative w-full aspect-square max-w-[420px] sm:max-w-[500px] lg:max-w-[640px] mx-auto mt-4 sm:mt-2 lg:-mt-24"
           >
-            {/* Ambient glow halo (soft in light so it doesn't reveal the square edges) */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.12),hsl(var(--accent)/0.06)_40%,transparent_55%)] dark:bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)] pointer-events-none transition-all duration-700" />
+            {/* Ambient glow halo (very soft in light so it doesn't reveal the square edges) */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.08),hsl(var(--accent)/0.04)_40%,transparent_50%)] dark:bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)] pointer-events-none transition-all duration-700" />
 
             {/* Brain image — watermark in light, screen-blended hologram in dark */}
             <img
@@ -197,8 +197,8 @@ const Hero = ({ onGetStarted }: HeroProps) => {
               className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none transition-all duration-700
                 opacity-45 blur-[0.5px] mix-blend-screen saturate-125 contrast-95 [filter:hue-rotate(155deg)_brightness(1.35)_saturate(1.4)]
                 dark:[filter:none] dark:opacity-95 dark:blur-0 dark:mix-blend-screen dark:saturate-125 dark:contrast-100
-                [mask-image:radial-gradient(circle_at_50%_50%,black_45%,rgba(0,0,0,0.7)_55%,rgba(0,0,0,0.4)_70%,rgba(0,0,0,0.15)_85%,transparent_100%)]
-                [-webkit-mask-image:radial-gradient(circle_at_50%_50%,black_45%,rgba(0,0,0,0.7)_55%,rgba(0,0,0,0.4)_70%,rgba(0,0,0,0.15)_85%,transparent_100%)]
+                [mask-image:radial-gradient(circle_at_50%_50%,black_45%,rgba(0,0,0,0.82)_50%,rgba(0,0,0,0.6)_57%,rgba(0,0,0,0.38)_66%,rgba(0,0,0,0.2)_76%,rgba(0,0,0,0.08)_87%,rgba(0,0,0,0.02)_95%,transparent_100%)]
+                [-webkit-mask-image:radial-gradient(circle_at_50%_50%,black_45%,rgba(0,0,0,0.82)_50%,rgba(0,0,0,0.6)_57%,rgba(0,0,0,0.38)_66%,rgba(0,0,0,0.2)_76%,rgba(0,0,0,0.08)_87%,rgba(0,0,0,0.02)_95%,transparent_100%)]
                 dark:[mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]
                 dark:[-webkit-mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]"
             />
@@ -213,7 +213,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             />
 
             {/* Edge fade into page background (circular mask to show both brain sides evenly in day mode) */}
-            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 bg-[radial-gradient(circle_at_50%_50%,transparent_45%,hsl(var(--background)_/_0.35)_55%,hsl(var(--background)_/_0.65)_70%,hsl(var(--background)_/_0.9)_85%,hsl(var(--background))_100%)]" />
+            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 bg-[radial-gradient(circle_at_50%_50%,transparent_45%,hsl(var(--background)_/_0.22)_50%,hsl(var(--background)_/_0.42)_57%,hsl(var(--background)_/_0.65)_66%,hsl(var(--background)_/_0.85)_76%,hsl(var(--background)_/_0.96)_87%,hsl(var(--background)_/_0.99)_95%,hsl(var(--background))_100%)]" />
 
 
             {/* Role chips */}
