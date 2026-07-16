@@ -1,7 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
-import * as pdfjsLib from 'pdfjs-dist';
+// Use the legacy build for broader mobile Safari / WebKit compatibility.
+// The modern build relies on async iterators over ReadableStream, which
+// crashes on iOS Safari with: "undefined is not a function (near '...i of n...')".
+import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 
-// Configure the worker
+// Match the worker to the exact version of the library to avoid API mismatches.
 pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`;
 
 export interface ParsedSkill {
@@ -93,11 +96,15 @@ export async function generateQuestions(
  */
 export async function extractTextFromPdf(file: File): Promise<string> {
   const arrayBuffer = await file.arrayBuffer();
+  // Pass a Uint8Array (not a stream) so pdf.js never falls back to async
+  // iteration over a ReadableStream — which is unsupported on mobile Safari.
+  const data = new Uint8Array(arrayBuffer);
 
   const pdf = await pdfjsLib.getDocument({
-    data: arrayBuffer,
+    data,
     useSystemFonts: true,
     disableFontFace: true,
+    
   }).promise;
 
   const numPages = pdf.numPages;
