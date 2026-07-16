@@ -186,7 +186,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             {/* Ambient glow halo (very soft in light so it doesn't reveal the square edges) */}
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.08),hsl(var(--accent)/0.04)_40%,transparent_50%)] dark:bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)] pointer-events-none transition-all duration-700" />
 
-            {/* Brain image — watermark in light, screen-blended hologram in dark */}
+            {/* Brain image — transparent PNG with soft edge fade in light, screen-blended hologram in dark */}
             <img
               src="/hero-brain-bg.png"
               alt="AI-powered neural brain visualization"
