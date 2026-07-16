@@ -71,23 +71,118 @@ const CareerRoadmap = ({ results, parsedResume }: CareerRoadmapProps) => {
   };
 
   const generateStepsForRole = (role: string, probability: number, userSkills: string[]): RoadmapStep[] => {
-    const roleSkillMap: Record<string, { title: string; desc: string; time: string; skills: string[] }[]> = {
-      default: [
-        { title: "Foundation", desc: "Strengthen core programming and problem-solving skills", time: "1-2 months", skills: ["Data Structures", "Algorithms", "Git"] },
-        { title: "Specialization", desc: "Deep-dive into domain-specific technologies", time: "2-3 months", skills: ["Frameworks", "Design Patterns", "APIs"] },
-        { title: "Portfolio", desc: "Build real projects that showcase your abilities", time: "1-2 months", skills: ["Project Management", "Documentation", "Deployment"] },
-        { title: "Interview Prep", desc: "Practice coding challenges and system design", time: "1 month", skills: ["System Design", "Mock Interviews", "Behavioral Prep"] },
-      ],
-    };
+    type StepTemplate = { title: string; desc: string; time: string; skills: string[] };
 
-    const steps = (roleSkillMap[role.toLowerCase()] || roleSkillMap.default).map(step => ({
-      ...step,
+    const templates: { match: RegExp; steps: StepTemplate[] }[] = [
+      {
+        match: /front[\s-]?end|react|vue|angular|ui\s?developer/i,
+        steps: [
+          { title: "Master Modern JavaScript", desc: "Deepen ES6+, TypeScript, and browser APIs fluency", time: "1-2 months", skills: ["TypeScript", "ES6+", "DOM APIs"] },
+          { title: "Component Architecture", desc: "Build scalable UIs with React and state management", time: "2 months", skills: ["React", "Redux/Zustand", "Hooks"] },
+          { title: "Performance & Testing", desc: "Optimize rendering, bundle size, and add tests", time: "1-2 months", skills: ["Vite", "Jest", "Lighthouse"] },
+          { title: "Ship Production UIs", desc: "Deploy polished apps with accessibility and design systems", time: "1 month", skills: ["Tailwind", "A11y", "Storybook"] },
+        ],
+      },
+      {
+        match: /back[\s-]?end|api|server|node|django|rails|spring/i,
+        steps: [
+          { title: "Server Fundamentals", desc: "Design REST/GraphQL APIs and handle auth", time: "1-2 months", skills: ["Node.js", "REST", "JWT"] },
+          { title: "Databases & Modeling", desc: "Master SQL/NoSQL schema design and query tuning", time: "2 months", skills: ["PostgreSQL", "Indexing", "ORMs"] },
+          { title: "Scale & Reliability", desc: "Add caching, queues, observability, and CI/CD", time: "2 months", skills: ["Redis", "Docker", "Logging"] },
+          { title: "System Design Prep", desc: "Practice distributed systems and interview scenarios", time: "1 month", skills: ["System Design", "Kafka", "Microservices"] },
+        ],
+      },
+      {
+        match: /full[\s-]?stack/i,
+        steps: [
+          { title: "End-to-End Basics", desc: "Wire a frontend to a backend with auth and DB", time: "1-2 months", skills: ["React", "Node.js", "SQL"] },
+          { title: "Production Patterns", desc: "Add validation, error handling, and testing across the stack", time: "2 months", skills: ["Zod", "Testing", "TypeScript"] },
+          { title: "DevOps Foundations", desc: "Containerize, deploy, and monitor a real product", time: "1-2 months", skills: ["Docker", "CI/CD", "Monitoring"] },
+          { title: "Portfolio Product", desc: "Ship a polished full-stack SaaS-style project", time: "1-2 months", skills: ["Payments", "Auth", "Deployment"] },
+        ],
+      },
+      {
+        match: /data\s?scien|machine\s?learning|ml\s?engineer|ai\s?engineer/i,
+        steps: [
+          { title: "Math & Python Toolkit", desc: "Strengthen linear algebra, stats, and pandas/NumPy", time: "1-2 months", skills: ["Python", "Statistics", "Pandas"] },
+          { title: "Classical ML", desc: "Build regression, classification, and clustering models", time: "2 months", skills: ["scikit-learn", "Feature Eng", "Model Eval"] },
+          { title: "Deep Learning", desc: "Train neural nets for vision or NLP tasks", time: "2-3 months", skills: ["PyTorch", "Transformers", "GPU Training"] },
+          { title: "MLOps & Deployment", desc: "Serve models with APIs and monitor drift", time: "1-2 months", skills: ["MLflow", "FastAPI", "Docker"] },
+        ],
+      },
+      {
+        match: /data\s?analy|business\s?intel|bi\s?analyst/i,
+        steps: [
+          { title: "SQL & Spreadsheets", desc: "Master analytical SQL and advanced Excel/Sheets", time: "1 month", skills: ["SQL", "Excel", "Joins"] },
+          { title: "Visualization", desc: "Tell stories with dashboards in BI tools", time: "1-2 months", skills: ["Tableau", "Power BI", "Charts"] },
+          { title: "Python for Analytics", desc: "Automate reports and run statistical analyses", time: "2 months", skills: ["Python", "Pandas", "Statistics"] },
+          { title: "Business Case Studies", desc: "Deliver insight portfolios with real datasets", time: "1 month", skills: ["A/B Testing", "KPIs", "Storytelling"] },
+        ],
+      },
+      {
+        match: /devops|sre|platform|cloud\s?engineer/i,
+        steps: [
+          { title: "Linux & Networking", desc: "Command line, shell scripting, and networking basics", time: "1-2 months", skills: ["Bash", "Linux", "Networking"] },
+          { title: "Cloud Foundations", desc: "Deploy infra on AWS/GCP with IaC", time: "2 months", skills: ["AWS", "Terraform", "IAM"] },
+          { title: "Containers & K8s", desc: "Run production workloads on Kubernetes", time: "2 months", skills: ["Docker", "Kubernetes", "Helm"] },
+          { title: "Observability & CI/CD", desc: "Build pipelines, monitoring, and on-call readiness", time: "1-2 months", skills: ["Prometheus", "GitHub Actions", "Grafana"] },
+        ],
+      },
+      {
+        match: /mobile|android|ios|flutter|react\s?native/i,
+        steps: [
+          { title: "Platform Basics", desc: "Learn the target platform's UI and lifecycle", time: "1-2 months", skills: ["Kotlin/Swift", "UI Kit", "Navigation"] },
+          { title: "State & Networking", desc: "Handle async data, storage, and offline UX", time: "2 months", skills: ["REST", "Local DB", "State Mgmt"] },
+          { title: "Native Integrations", desc: "Push notifications, camera, and device APIs", time: "1-2 months", skills: ["Push", "Camera", "Permissions"] },
+          { title: "Ship to Stores", desc: "Publish, monitor crashes, and iterate", time: "1 month", skills: ["Play Store", "App Store", "Crashlytics"] },
+        ],
+      },
+      {
+        match: /security|cyber|pentest|infosec/i,
+        steps: [
+          { title: "Security Foundations", desc: "Networking, OS internals, and threat modeling", time: "1-2 months", skills: ["Networking", "Linux", "OWASP"] },
+          { title: "Offensive Basics", desc: "Web, network, and cloud pentesting fundamentals", time: "2 months", skills: ["Burp Suite", "Nmap", "Metasploit"] },
+          { title: "Defense & Detection", desc: "SIEM, IR, and secure architecture patterns", time: "2 months", skills: ["SIEM", "IR", "Zero Trust"] },
+          { title: "Certifications & CTFs", desc: "Prep for OSCP/Security+ and practice CTFs", time: "2-3 months", skills: ["OSCP", "CTFs", "Reporting"] },
+        ],
+      },
+      {
+        match: /product\s?manager|pm\b/i,
+        steps: [
+          { title: "Discovery Skills", desc: "User research, interviews, and problem framing", time: "1-2 months", skills: ["User Research", "Jobs-to-be-Done", "Interviews"] },
+          { title: "Roadmapping & Metrics", desc: "Prioritization frameworks and product analytics", time: "1-2 months", skills: ["RICE", "OKRs", "Analytics"] },
+          { title: "Delivery & Design", desc: "Work with design/eng, write specs, ship iteratively", time: "2 months", skills: ["Specs", "Figma Literacy", "Agile"] },
+          { title: "Case Studies", desc: "Build a PM portfolio and prep interviews", time: "1 month", skills: ["Case Studies", "Metrics", "Storytelling"] },
+        ],
+      },
+      {
+        match: /designer|ux|ui\s?design/i,
+        steps: [
+          { title: "Design Fundamentals", desc: "Typography, color, layout, and visual hierarchy", time: "1-2 months", skills: ["Typography", "Color", "Layout"] },
+          { title: "UX Research", desc: "Interviews, usability testing, and journey mapping", time: "1-2 months", skills: ["Research", "Journey Maps", "Usability"] },
+          { title: "Design Systems", desc: "Build reusable components and tokens in Figma", time: "2 months", skills: ["Figma", "Tokens", "Components"] },
+          { title: "Portfolio Case Studies", desc: "Publish 3 case studies showing process and impact", time: "1-2 months", skills: ["Case Studies", "Prototyping", "Storytelling"] },
+        ],
+      },
+    ];
+
+    const defaultSteps: StepTemplate[] = [
+      { title: "Foundation", desc: `Strengthen the core skills required for a ${role}`, time: "1-2 months", skills: ["Fundamentals", "Problem Solving", "Git"] },
+      { title: "Specialization", desc: `Deep-dive into technologies most used by a ${role}`, time: "2-3 months", skills: ["Domain Tools", "Best Practices", "APIs"] },
+      { title: "Portfolio Projects", desc: `Ship real projects that demonstrate ${role} capabilities`, time: "1-2 months", skills: ["Projects", "Documentation", "Deployment"] },
+      { title: "Interview Prep", desc: `Practice ${role}-focused interviews and case studies`, time: "1 month", skills: ["System Design", "Mock Interviews", "Behavioral"] },
+    ];
+
+    const chosen = templates.find(t => t.match.test(role))?.steps ?? defaultSteps;
+
+    const steps = chosen.map(step => ({
+      title: step.title,
       description: step.desc,
       timeframe: step.time,
+      skills: step.skills,
       completed: step.skills.some(s => userSkills.includes(s.toLowerCase())),
     }));
 
-    // Mark early steps as completed if probability is high
     if (probability >= 70 && steps.length > 0) steps[0].completed = true;
     if (probability >= 85 && steps.length > 1) steps[1].completed = true;
 
