@@ -183,22 +183,22 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             transition={{ duration: 1.2, delay: 0.2 }}
             className="relative w-full aspect-square max-w-[420px] sm:max-w-[500px] lg:max-w-[640px] mx-auto mt-4 sm:mt-2 lg:-mt-24"
           >
-            {/* Ambient glow halo (very soft in light so it doesn't reveal the square edges) */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.08),hsl(var(--accent)/0.04)_40%,transparent_50%)] dark:bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)] pointer-events-none transition-all duration-700" />
+            {/* Ambient glow halo (soft in light so it doesn't reveal the square edges) */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.12),hsl(var(--accent)/0.06)_40%,transparent_55%)] dark:bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),transparent_60%)] pointer-events-none transition-all duration-700" />
 
-            {/* Brain image — transparent PNG with soft edge fade in light, screen-blended hologram in dark */}
+            {/* Brain image — watermark in light, screen-blended hologram in dark */}
             <img
-              src="/hero-brain-bg.png"
+              src="/hero-brain-bg.webp"
               alt="AI-powered neural brain visualization"
               width={1024}
               height={1024}
               fetchPriority="high"
               decoding="async"
               className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none transition-all duration-700
-                opacity-90 blur-[0.5px] mix-blend-normal saturate-135 contrast-105
-                dark:opacity-95 dark:blur-0 dark:mix-blend-screen dark:saturate-125 dark:contrast-100
-                [mask-image:radial-gradient(circle_at_50%_50%,black_45%,rgba(0,0,0,0.45)_55%,rgba(0,0,0,0.12)_62%,transparent_70%)]
-                [-webkit-mask-image:radial-gradient(circle_at_50%_50%,black_45%,rgba(0,0,0,0.45)_55%,rgba(0,0,0,0.12)_62%,transparent_70%)]
+                opacity-45 blur-[0.5px] mix-blend-screen saturate-125 contrast-95 [filter:hue-rotate(155deg)_brightness(1.35)_saturate(1.4)]
+                dark:[filter:none] dark:opacity-95 dark:blur-0 dark:mix-blend-screen dark:saturate-125 dark:contrast-100
+                [mask-image:radial-gradient(circle_at_50%_50%,black_45%,rgba(0,0,0,0.7)_55%,rgba(0,0,0,0.4)_70%,rgba(0,0,0,0.15)_85%,transparent_100%)]
+                [-webkit-mask-image:radial-gradient(circle_at_50%_50%,black_45%,rgba(0,0,0,0.7)_55%,rgba(0,0,0,0.4)_70%,rgba(0,0,0,0.15)_85%,transparent_100%)]
                 dark:[mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]
                 dark:[-webkit-mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]"
             />
@@ -213,13 +213,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             />
 
             {/* Edge fade into page background (circular mask to show both brain sides evenly in day mode) */}
-            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 bg-[radial-gradient(circle_at_50%_50%,transparent_45%,hsl(var(--background)_/_0.25)_60%,hsl(var(--background)_/_0.65)_75%,hsl(var(--background))_90%)]" />
-
-            {/* Edge blur to fully hide the square boundary in day mode (inner brain stays untouched) */}
-            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 backdrop-blur-sm [mask-image:radial-gradient(circle_at_50%_50%,transparent_45%,black_90%)] [-webkit-mask-image:radial-gradient(circle_at_50%_50%,transparent_45%,black_90%)]" />
-
-
-
+            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 bg-[radial-gradient(circle_at_50%_50%,transparent_45%,hsl(var(--background)_/_0.35)_55%,hsl(var(--background)_/_0.65)_70%,hsl(var(--background)_/_0.9)_85%,hsl(var(--background))_100%)]" />
 
 
             {/* Role chips */}
