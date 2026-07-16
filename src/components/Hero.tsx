@@ -213,10 +213,10 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             />
 
             {/* Edge fade into page background (circular mask to show both brain sides evenly in day mode) */}
-            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 bg-[radial-gradient(circle_at_50%_50%,transparent_45%,hsl(var(--background)_/_0.45)_48%,hsl(var(--background)_/_0.68)_54%,hsl(var(--background)_/_0.85)_62%,hsl(var(--background)_/_0.96)_72%,hsl(var(--background)_/_0.99)_85%,hsl(var(--background))_100%)]" />
+            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 bg-[radial-gradient(circle_at_50%_50%,transparent_45%,hsl(var(--background)_/_0.65)_48%,hsl(var(--background)_/_0.88)_54%,hsl(var(--background)_/_0.97)_60%,hsl(var(--background))_70%)]" />
 
             {/* Edge blur to fully hide the square boundary in day mode (inner brain stays untouched) */}
-            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 backdrop-blur-2xl [mask-image:radial-gradient(circle_at_50%_50%,transparent_45%,black_100%)] [-webkit-mask-image:radial-gradient(circle_at_50%_50%,transparent_45%,black_100%)]" />
+            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 backdrop-blur-3xl [mask-image:radial-gradient(circle_at_50%_50%,transparent_45%,black_100%)] [-webkit-mask-image:radial-gradient(circle_at_50%_50%,transparent_45%,black_100%)]" />
 
 
 
