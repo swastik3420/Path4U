@@ -93,9 +93,6 @@ const Header = () => {
             </>
           ) : (
             <>
-              <Link to="/auth">
-                <Button variant="ghost">Sign In</Button>
-              </Link>
               <Link to="/company/auth">
                 <Button variant="outline" size="sm" className="rounded-none">
                   For Companies
