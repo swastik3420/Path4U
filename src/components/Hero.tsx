@@ -184,7 +184,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             className="relative w-full aspect-square max-w-[420px] sm:max-w-[500px] lg:max-w-[640px] mx-auto mt-4 sm:mt-2 lg:-mt-24"
           >
             {/* Ambient glow halo (bleeds past the container so it blends seamlessly into the light background) */}
-            <div className="absolute -inset-[15%] blur-[80px] sm:blur-[100px] bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.16),hsl(var(--accent)/0.08)_40%,hsl(var(--background)/0)_75%)] dark:bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),hsl(var(--background)/0)_70%)] pointer-events-none transition-all duration-700" />
+            <div className="absolute -inset-[25%] blur-[120px] sm:blur-[140px] bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.12),hsl(var(--accent)/0.06)_40%,hsl(var(--background)/0)_55%)] dark:bg-[radial-gradient(circle_at_50%_45%,hsl(var(--primary)/0.25),hsl(var(--background)/0)_65%)] pointer-events-none transition-all duration-700" />
 
             {/* Brain image — watermark in light, screen-blended hologram in dark */}
             <img
