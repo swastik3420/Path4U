@@ -93,9 +93,6 @@ const Header = () => {
             </>
           ) : (
             <>
-              <Link to="/auth">
-                <Button variant="ghost">Sign In</Button>
-              </Link>
               <Link to="/company/auth">
                 <Button variant="outline" size="sm" className="rounded-none">
                   For Companies
@@ -140,11 +137,6 @@ const Header = () => {
             </>
           ) : (
             <>
-              <Link to="/auth">
-                <Button variant="ghost" className="w-full">
-                  Sign In
-                </Button>
-              </Link>
               <Link to="/auth">
                 <Button variant="hero" className="w-full">
                   Get Started
