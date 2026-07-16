@@ -533,7 +533,7 @@ const ProfileSettings = () => {
               Accessibility
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-5">
             <div className="flex items-center justify-between">
               <div className="space-y-0.5">
                 <Label htmlFor="reduce-motion" className="text-base font-semibold">Reduce motion</Label>
@@ -545,6 +545,13 @@ const ProfileSettings = () => {
                 onCheckedChange={toggleReduceMotion}
                 aria-label="Reduce motion"
               />
+            </div>
+            <div className="flex items-center justify-between">
+              <div className="space-y-0.5">
+                <Label className="text-base font-semibold">Appearance</Label>
+                <p className="text-sm text-muted-foreground">Switch between dark and light mode.</p>
+              </div>
+              <ThemeToggle />
             </div>
           </CardContent>
         </Card>
