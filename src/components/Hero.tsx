@@ -197,8 +197,8 @@ const Hero = ({ onGetStarted }: HeroProps) => {
               className="absolute inset-0 w-full h-full object-contain select-none pointer-events-none transition-all duration-700
                 opacity-45 blur-[0.5px] mix-blend-screen saturate-125 contrast-95 [filter:hue-rotate(155deg)_brightness(1.35)_saturate(1.4)]
                 dark:[filter:none] dark:opacity-95 dark:blur-0 dark:mix-blend-screen dark:saturate-125 dark:contrast-100
-                [mask-image:radial-gradient(circle_at_50%_50%,black_45%,transparent_88%)]
-                [-webkit-mask-image:radial-gradient(circle_at_50%_50%,black_45%,transparent_88%)]
+                [mask-image:radial-gradient(circle_at_50%_50%,black_45%,transparent_100%)]
+                [-webkit-mask-image:radial-gradient(circle_at_50%_50%,black_45%,transparent_100%)]
                 dark:[mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]
                 dark:[-webkit-mask-image:radial-gradient(ellipse_at_50%_50%,black_35%,transparent_72%)]"
             />
@@ -213,7 +213,7 @@ const Hero = ({ onGetStarted }: HeroProps) => {
             />
 
             {/* Edge fade into page background (circular mask to show both brain sides evenly in day mode) */}
-            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 bg-[radial-gradient(circle_at_50%_50%,transparent_45%,hsl(var(--background))_87%)]" />
+            <div className="absolute inset-0 pointer-events-none transition-opacity duration-700 opacity-100 dark:opacity-0 bg-[radial-gradient(circle_at_50%_50%,transparent_45%,hsl(var(--background))_100%)]" />
 
 
             {/* Role chips */}
