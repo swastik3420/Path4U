@@ -70,6 +70,91 @@ const ATSScoreDialog = ({ open, onOpenChange }: ATSScoreDialogProps) => {
     onOpenChange(next);
   };
 
+  const handleDownloadPDF = () => {
+    if (!result) return;
+    const pdf = new jsPDF({ orientation: "portrait", unit: "pt", format: "a4" });
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 40;
+    const contentWidth = pageWidth - margin * 2;
+    let y = margin;
+
+    const ensureSpace = (needed: number) => {
+      if (y + needed > pageHeight - margin) {
+        pdf.addPage();
+        y = margin;
+      }
+    };
+
+    const writeWrapped = (text: string, size: number, style: "normal" | "bold" = "normal", lineGap = 4) => {
+      pdf.setFont("helvetica", style);
+      pdf.setFontSize(size);
+      const lines = pdf.splitTextToSize(text, contentWidth);
+      lines.forEach((line: string) => {
+        ensureSpace(size + lineGap);
+        pdf.text(line, margin, y);
+        y += size + lineGap;
+      });
+    };
+
+    // Header
+    pdf.setFillColor(15, 23, 42);
+    pdf.rect(0, 0, pageWidth, 80, "F");
+    pdf.setTextColor(255, 255, 255);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(20);
+    pdf.text("ATS Score Report", margin, 40);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(10);
+    pdf.text(`Path4U — ${new Date().toLocaleDateString()}`, margin, 60);
+    if (file?.name) pdf.text(file.name, pageWidth - margin, 60, { align: "right" });
+
+    pdf.setTextColor(20, 20, 20);
+    y = 110;
+
+    // Overall Score
+    writeWrapped(`Overall Score: ${result.overallScore}/100 — ${result.rating}`, 16, "bold", 6);
+    y += 4;
+    writeWrapped(result.summary, 11, "normal", 4);
+    y += 10;
+
+    // Category Breakdown
+    writeWrapped("Category Breakdown", 14, "bold", 6);
+    result.categories.forEach((c) => {
+      writeWrapped(`• ${c.name}: ${c.score}/${c.maxScore} (${c.status})`, 11, "bold", 3);
+      writeWrapped(`   ${c.feedback}`, 10, "normal", 4);
+    });
+    y += 6;
+
+    // Keywords
+    if (result.keywordMatches.found.length || result.keywordMatches.missing.length) {
+      writeWrapped("Keyword Analysis", 14, "bold", 6);
+      if (result.keywordMatches.found.length) {
+        writeWrapped(`Found: ${result.keywordMatches.found.join(", ")}`, 10, "normal", 4);
+      }
+      if (result.keywordMatches.missing.length) {
+        writeWrapped(`Consider adding: ${result.keywordMatches.missing.join(", ")}`, 10, "normal", 4);
+      }
+      y += 6;
+    }
+
+    // Issues
+    if (result.issues.length) {
+      writeWrapped("What's Hurting Your Score", 14, "bold", 6);
+      result.issues.forEach((i) => writeWrapped(`• ${i}`, 10, "normal", 4));
+      y += 6;
+    }
+
+    // Recommendations
+    if (result.recommendations.length) {
+      writeWrapped("Recommendations", 14, "bold", 6);
+      result.recommendations.forEach((r) => writeWrapped(`• ${r}`, 10, "normal", 4));
+    }
+
+    pdf.save(`ATS-Score-Report-${new Date().toISOString().slice(0, 10)}.pdf`);
+  };
+
+
   const isAccepted = (f: File) => {
     const ext = "." + f.name.split(".").pop()?.toLowerCase();
     return ACCEPTED_EXTENSIONS.includes(ext);
