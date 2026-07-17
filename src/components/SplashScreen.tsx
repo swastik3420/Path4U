@@ -51,7 +51,6 @@ const SplashScreen = () => {
           </>
         )}
         <Loader2 className="h-12 w-12 md:h-16 md:w-16 animate-spin text-muted-foreground mt-4" />
-        <p className="text-xs text-muted-foreground mt-6 opacity-60">click anywhere to skip</p>
       </div>
     </div>
   );
