@@ -576,9 +576,10 @@ serve(async (req) => {
       const collected: any[] = [];
 
       await Promise.all(queriesToRun.map(async ({ query, weight }) => {
+        const randomPage = String(1 + Math.floor(Math.random() * 3));
         const params = new URLSearchParams({
           query,
-          page: '1',
+          page: randomPage,
           num_pages: '1',
           date_posted: 'week',
         });
