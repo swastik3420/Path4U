@@ -93,11 +93,11 @@ const Header = () => {
             </>
           ) : (
             <>
-              <Link to="/company/auth">
-                <Button variant="outline" size="sm" className="rounded-none">
-                  For Companies
-                </Button>
-              </Link>
+            <Link to="/company/auth">
+              <Button variant="outline" className="rounded-none">
+                For Companies
+              </Button>
+            </Link>
               <Link to="/auth">
                 <Button variant="hero" className="rounded-none">
                   Get Started
