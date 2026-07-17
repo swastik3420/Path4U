@@ -181,7 +181,7 @@ const Auth = () => {
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className={`pl-10 ${errors.email ? 'border-destructive' : ''}`}
+                  className={`pl-10 rounded-none ${errors.email ? 'border-destructive' : ''}`}
                   disabled={isSubmitting}
                 />
               </div>
