@@ -148,7 +148,7 @@ const Auth = () => {
           </p>
         </div>
 
-        <div className="bg-card rounded-2xl shadow-lg p-8">
+        <div className="bg-card rounded-none shadow-lg p-8">
           <form onSubmit={handleSubmit} className="space-y-6">
             {!isLogin && (
               <div className="space-y-2">
