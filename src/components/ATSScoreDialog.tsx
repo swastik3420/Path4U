@@ -267,7 +267,7 @@ const ATSScoreDialog = ({ open, onOpenChange }: ATSScoreDialogProps) => {
               className="space-y-6"
             >
               {/* Score ring */}
-              <div className="flex flex-col sm:flex-row items-center gap-6 p-6 rounded-2xl bg-card border border-border">
+              <div className="flex flex-col sm:flex-row items-center gap-6 p-6 rounded-none bg-card border border-border">
                 <div className="relative">
                   <svg width="140" height="140" className="-rotate-90">
                     <circle cx="70" cy="70" r={radius} className="stroke-muted fill-none" strokeWidth="10" />
