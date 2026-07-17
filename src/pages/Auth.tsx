@@ -266,7 +266,7 @@ const Auth = () => {
               setIsSubmitting(true);
               try {
                 const { error } = await lovable.auth.signInWithOAuth("google", {
-                  redirect_uri: window.location.origin,
+                  redirect_uri: "https://path4u.vercel.app",
                 });
                 if (error) {
                   toast({
