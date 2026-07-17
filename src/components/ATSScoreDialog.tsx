@@ -388,14 +388,20 @@ const ATSScoreDialog = ({ open, onOpenChange }: ATSScoreDialogProps) => {
                 </div>
               )}
 
-              <div className="flex justify-between gap-3 pt-2">
+              <div className="flex justify-between gap-3 pt-2 flex-wrap">
                 <Button variant="outline" onClick={reset}>
                   <FileText className="w-4 h-4 mr-2" />
                   Scan Another Resume
                 </Button>
-                <Button variant="hero" onClick={() => handleClose(false)}>
-                  Done
-                </Button>
+                <div className="flex gap-2">
+                  <Button variant="secondary" onClick={handleDownloadPDF}>
+                    <Download className="w-4 h-4 mr-2" />
+                    Download PDF
+                  </Button>
+                  <Button variant="hero" onClick={() => handleClose(false)}>
+                    Done
+                  </Button>
+                </div>
               </div>
             </motion.div>
           )}
