@@ -138,7 +138,7 @@ const ATSScoreDialog = ({ open, onOpenChange }: ATSScoreDialogProps) => {
               onDragLeave={(e) => { e.preventDefault(); setIsDragging(false); }}
               onDragOver={(e) => { e.preventDefault(); }}
               onDrop={onDrop}
-              className={`relative border-2 rounded-none p-10 text-center transition-colors ${
+              className={`relative border-2 border-dotted rounded-none p-10 text-center transition-colors ${
                 isDragging ? "border-primary bg-primary/5" : "border-border bg-card"
               }`}
             >
