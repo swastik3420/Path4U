@@ -101,7 +101,7 @@ serve(async (req) => {
 
     console.log('Generating questions for', selectedSkills.length, 'skills, level:', experienceLevel);
 
-    const systemPrompt = `You are an expert technical interviewer creating a comprehensive skill assessment. Your questions should accurately measure the candidate's real proficiency level across all their skills.
+    const systemPrompt = `You are an expert technical interviewer creating a comprehensive skill assessment. Your questions must be factually bulletproof.
 
 ## Candidate Profile
 - Experience Level: ${experienceLevel || 'Unknown'}
@@ -115,52 +115,72 @@ Generate exactly ${totalQuestions} questions total:
 - ${intermediateCount} Intermediate difficulty questions
 - ${advancedCount} Advanced difficulty questions
 
-Distribute questions across ALL the skills listed above to maximize coverage. Each skill should have at least 1 question. Spread the remaining questions to cover more aspects of each skill.
+Distribute questions across ALL the skills listed above to maximize coverage. Each skill should have at least 1 question.
 
-Question quality rules:
-- Questions must be practical and test real-world knowledge, not trivia
-- All 4 options must be plausible — no obviously wrong answers
-- Only ONE correct answer per question
-- Explanations should teach something useful
-- Cover different aspects of each skill (don't repeat similar questions)
-- Basic questions test fundamental concepts and syntax
-- Intermediate questions test practical application and common patterns
-- Advanced questions test deep understanding, edge cases, and architectural decisions
+## ABSOLUTE ACCURACY RULES (non-negotiable)
+- If you are NOT 100% certain of the absolute technical accuracy of an answer according to official developer documentation, DO NOT generate that question. Skip it and move to another concept. Do not assume, extrapolate, or create ambiguous options.
+- Every question must have EXACTLY ONE unambiguously correct answer verifiable against official docs (MDN, official language/framework docs, RFCs, etc.).
+- Avoid questions about behavior that changes across versions unless you specify the version.
+- Avoid trick questions, opinion-based questions, or "best practice" questions where multiple answers could be defended.
+- All 4 options must be plausible and mutually exclusive — no obviously wrong or joke answers.
+- The 'correctAnswer' is a ZERO-BASED INDEX (0..3) pointing into 'options'. Double-check the index matches the option text you believe is correct.
+- Before finalizing each question, mentally verify: "Would a senior engineer reading official docs agree the option at index correctAnswer is the ONLY correct one?" If not, discard.
+- The 'explanation' MUST explicitly restate the correct option's text AND justify why it is correct AND why each other option is wrong. This forces self-consistency between correctAnswer and explanation.
 
-## Output Format
+## Question quality
+- Practical, real-world knowledge — not trivia.
+- Basic: fundamental syntax/concepts. Intermediate: practical application. Advanced: edge cases, internals, architectural trade-offs.
+- Cover different aspects of each skill (no near-duplicates).
 
-Return ONLY a valid JSON array (no markdown, no extra text):
-[
-  {
-    "skill": "React",
-    "difficulty": "Intermediate",
-    "question": "What is the primary purpose of React's useCallback hook?",
-    "options": [
-      "To memoize a callback function to prevent unnecessary re-renders",
-      "To create a new callback on every render for fresh closure values",
-      "To replace the need for useEffect in event handlers",
-      "To automatically debounce function calls"
-    ],
-    "correctAnswer": 0,
-    "explanation": "useCallback memoizes a callback function so it maintains the same reference between renders, preventing unnecessary re-renders of child components that receive it as a prop."
-  }
-]`;
+Return ONLY a JSON object matching the required schema. No prose, no markdown.`;
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
+    const jsonSchema = {
+      name: 'assessment_questions',
+      strict: true,
+      schema: {
+        type: 'object',
+        additionalProperties: false,
+        properties: {
+          questions: {
+            type: 'array',
+            items: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                skill: { type: 'string' },
+                difficulty: { type: 'string', enum: ['Basic', 'Intermediate', 'Advanced'] },
+                question: { type: 'string' },
+                options: { type: 'array', items: { type: 'string' } },
+                correctAnswer: { type: 'integer' },
+                correctAnswerText: { type: 'string' },
+                explanation: { type: 'string' },
+              },
+              required: ['skill', 'difficulty', 'question', 'options', 'correctAnswer', 'correctAnswerText', 'explanation'],
+            },
+          },
+        },
+        required: ['questions'],
+      },
+    };
+
+    const callGateway = async (body: unknown) => fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${LOVABLE_API_KEY}`,
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
-        messages: [
-          { role: 'system', content: systemPrompt },
-          { role: 'user', content: `Generate the assessment questions now for the skills listed above. Return ONLY a valid JSON array, no prose.` }
-        ],
-        temperature: 0.6,
-        max_tokens: 16000,
-      }),
+      body: JSON.stringify(body),
+    });
+
+    const response = await callGateway({
+      model: 'google/gemini-3-flash-preview',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: `Generate the assessment questions now for the skills listed above.` }
+      ],
+      temperature: 0.3,
+      max_tokens: 16000,
+      response_format: { type: 'json_schema', json_schema: jsonSchema },
     });
 
     if (!response.ok) {
