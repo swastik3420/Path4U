@@ -191,7 +191,7 @@ const Results = ({ results, onRestart, parsedResume }: ResultsProps) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
             >
-              <div className="bg-card rounded-none shadow-lg p-6 text-center h-full">
+              <div className="bg-card rounded-none shadow-lg p-6 text-center h-full aspect-square flex flex-col items-center justify-center">
                 <h4 className="text-muted-foreground mb-4">Overall Score</h4>
                 <div className="relative w-32 h-32 mx-auto mb-4">
                   <svg className="w-full h-full transform -rotate-90">
