@@ -216,99 +216,161 @@ Return ONLY a JSON object matching the required schema. No prose, no markdown.`;
       );
     }
 
-    let questions;
+    let questions: any[];
     try {
-      // Strip markdown code fences if present
-      let jsonStr = content;
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)\s*```/) || content.match(/```\s*([\s\S]*?)\s*```/);
-      if (jsonMatch) {
-        jsonStr = jsonMatch[1];
-      }
-      jsonStr = jsonStr.trim();
-      
-      // Find the outermost JSON array by matching brackets
-      const startIdx = jsonStr.indexOf('[');
-      if (startIdx === -1) throw new Error('No JSON array found');
-      
-      let depth = 0;
-      let endIdx = -1;
-      for (let i = startIdx; i < jsonStr.length; i++) {
-        if (jsonStr[i] === '[') depth++;
-        else if (jsonStr[i] === ']') {
-          depth--;
-          if (depth === 0) { endIdx = i; break; }
-        }
-      }
-      
-      if (endIdx === -1) {
-        // Array wasn't closed - try to fix by finding last complete object and closing
-        const lastObjEnd = jsonStr.lastIndexOf('}');
-        if (lastObjEnd > startIdx) {
-          jsonStr = jsonStr.substring(startIdx, lastObjEnd + 1) + ']';
-        } else {
-          throw new Error('Cannot find valid JSON array');
-        }
-      } else {
-        jsonStr = jsonStr.substring(startIdx, endIdx + 1);
-      }
-      
+      let parsed: any;
       try {
-        questions = JSON.parse(jsonStr);
-      } catch (_e) {
-        // Fallback: extract individual complete objects by brace matching
-        console.warn('Array parse failed, extracting objects individually');
-        const objs: any[] = [];
-        let d = 0, objStart = -1, inStr = false, esc = false;
-        for (let i = 0; i < jsonStr.length; i++) {
-          const c = jsonStr[i];
-          if (inStr) {
-            if (esc) esc = false;
-            else if (c === '\\') esc = true;
-            else if (c === '"') inStr = false;
-            continue;
-          }
-          if (c === '"') { inStr = true; continue; }
-          if (c === '{') { if (d === 0) objStart = i; d++; }
-          else if (c === '}') {
-            d--;
-            if (d === 0 && objStart !== -1) {
-              try { objs.push(JSON.parse(jsonStr.substring(objStart, i + 1))); } catch (_) {}
-              objStart = -1;
-            }
-          }
-        }
-        questions = objs;
+        parsed = JSON.parse(content);
+      } catch {
+        // Fallback: strip fences / extract JSON object or array
+        let jsonStr = content;
+        const fence = content.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+        if (fence) jsonStr = fence[1];
+        jsonStr = jsonStr.trim();
+        const objStart = jsonStr.indexOf('{');
+        const arrStart = jsonStr.indexOf('[');
+        const start = (objStart !== -1 && (arrStart === -1 || objStart < arrStart)) ? objStart : arrStart;
+        if (start === -1) throw new Error('No JSON found');
+        parsed = JSON.parse(jsonStr.slice(start));
       }
 
-      if (!Array.isArray(questions)) {
-        throw new Error('Response is not an array');
-      }
-      
-      // Add IDs and validate structure
-      questions = questions
-        .filter((q: any) => q.question && q.options && Array.isArray(q.options) && q.options.length === 4)
-        .map((q: any, index: number) => ({
-          id: index + 1,
-          skill: q.skill || 'General',
-          difficulty: q.difficulty || 'Intermediate',
+      const raw: any[] = Array.isArray(parsed) ? parsed : (Array.isArray(parsed?.questions) ? parsed.questions : []);
+
+      // Validation: enforce structural + self-consistency (correctAnswer index matches correctAnswerText)
+      questions = raw
+        .filter((q: any) => {
+          if (!q?.question || !Array.isArray(q?.options) || q.options.length !== 4) return false;
+          if (typeof q.correctAnswer !== 'number' || q.correctAnswer < 0 || q.correctAnswer > 3) return false;
+          if (!q.explanation || typeof q.explanation !== 'string') return false;
+          // Self-consistency: if correctAnswerText provided, it must match option at correctAnswer index
+          if (typeof q.correctAnswerText === 'string' && q.correctAnswerText.trim()) {
+            const opt = String(q.options[q.correctAnswer] || '').trim().toLowerCase();
+            const txt = q.correctAnswerText.trim().toLowerCase();
+            // Try to auto-correct: find option matching correctAnswerText
+            if (opt !== txt) {
+              const idx = q.options.findIndex((o: string) => String(o).trim().toLowerCase() === txt);
+              if (idx !== -1) {
+                q.correctAnswer = idx;
+              } else {
+                console.warn('Dropping question with inconsistent correctAnswer/correctAnswerText:', q.question);
+                return false;
+              }
+            }
+          }
+          return true;
+        });
+
+      if (questions.length === 0) throw new Error('No valid questions generated');
+
+      // ===== Verification Pass: Senior Technical Interviewer review =====
+      try {
+        const reviewSchema = {
+          name: 'question_review',
+          strict: true,
+          schema: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              reviews: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  additionalProperties: false,
+                  properties: {
+                    id: { type: 'integer' },
+                    verdict: { type: 'string', enum: ['keep', 'fix', 'drop'] },
+                    correctedAnswer: { type: 'integer' },
+                    reason: { type: 'string' },
+                  },
+                  required: ['id', 'verdict', 'correctedAnswer', 'reason'],
+                },
+              },
+            },
+            required: ['reviews'],
+          },
+        };
+
+        const forReview = questions.map((q, i) => ({
+          id: i,
+          skill: q.skill,
           question: q.question,
           options: q.options,
-          correctAnswer: typeof q.correctAnswer === 'number' ? q.correctAnswer : 0,
-          explanation: q.explanation || '',
+          claimedCorrectAnswer: q.correctAnswer,
+          claimedCorrectText: q.options[q.correctAnswer],
+          explanation: q.explanation,
         }));
-      
-      console.log('Generated', questions.length, 'valid questions');
-      
-      if (questions.length === 0) {
-        throw new Error('No valid questions generated');
+
+        const reviewResp = await callGateway({
+          model: 'google/gemini-3-flash-preview',
+          messages: [
+            {
+              role: 'system',
+              content: `You are a Senior Technical Interviewer auditing multiple-choice questions for factual correctness against official developer documentation.
+
+For each question, decide:
+- "keep": the claimedCorrectAnswer index is unambiguously correct per official docs and the explanation is factually sound.
+- "fix": the question is well-formed but the claimedCorrectAnswer index is wrong; provide the correct index in correctedAnswer.
+- "drop": the question is ambiguous, has multiple correct answers, no correct answer, is factually confused, or you are not 100% certain of the right answer.
+
+Set correctedAnswer to the current claimedCorrectAnswer when verdict is "keep" or "drop". Be strict — when in doubt, drop.`,
+            },
+            { role: 'user', content: JSON.stringify({ questions: forReview }) },
+          ],
+          temperature: 0,
+          max_tokens: 8000,
+          response_format: { type: 'json_schema', json_schema: reviewSchema },
+        });
+
+        if (reviewResp.ok) {
+          const reviewData = await reviewResp.json();
+          const reviewContent = reviewData.choices?.[0]?.message?.content;
+          if (reviewContent) {
+            const reviewParsed = JSON.parse(reviewContent);
+            const reviews: any[] = Array.isArray(reviewParsed?.reviews) ? reviewParsed.reviews : [];
+            const byId = new Map<number, any>();
+            for (const r of reviews) byId.set(r.id, r);
+            const before = questions.length;
+            questions = questions
+              .map((q, i) => {
+                const r = byId.get(i);
+                if (!r) return q;
+                if (r.verdict === 'drop') return null;
+                if (r.verdict === 'fix' && typeof r.correctedAnswer === 'number' && r.correctedAnswer >= 0 && r.correctedAnswer < 4) {
+                  return { ...q, correctAnswer: r.correctedAnswer };
+                }
+                return q;
+              })
+              .filter(Boolean) as any[];
+            console.log(`Verification pass: kept ${questions.length}/${before} questions`);
+          }
+        } else {
+          console.warn('Verification pass failed, using unverified questions:', reviewResp.status);
+        }
+      } catch (verErr) {
+        console.warn('Verification pass error, using unverified questions:', verErr);
       }
+
+      if (questions.length === 0) throw new Error('No questions survived verification');
+
+      questions = questions.map((q: any, index: number) => ({
+        id: index + 1,
+        skill: q.skill || 'General',
+        difficulty: q.difficulty || 'Intermediate',
+        question: q.question,
+        options: q.options,
+        correctAnswer: q.correctAnswer,
+        explanation: q.explanation || '',
+      }));
+
+      console.log('Final', questions.length, 'validated questions');
     } catch (parseError) {
-      console.error('Failed to parse questions:', parseError, 'Content:', content.substring(0, 500));
+      console.error('Failed to parse questions:', parseError, 'Content:', String(content).substring(0, 500));
       return new Response(
         JSON.stringify({ error: 'Failed to parse questions. Please try again.' }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
+
 
     return new Response(
       JSON.stringify({ success: true, questions }),
