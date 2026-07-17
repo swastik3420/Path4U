@@ -102,7 +102,7 @@ const DownloadInsightsPDF = ({ sectionIds }: DownloadInsightsPDFProps) => {
   };
 
   return (
-    <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border border-primary/20 rounded-2xl p-6 flex items-center justify-between flex-wrap gap-4">
+    <div className="bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 border border-primary/20 rounded-none p-6 flex items-center justify-between flex-wrap gap-4">
       <div>
         <h4 className="font-semibold text-foreground flex items-center gap-2">
           <Download className="w-5 h-5 text-primary" />
@@ -112,7 +112,7 @@ const DownloadInsightsPDF = ({ sectionIds }: DownloadInsightsPDFProps) => {
           Export your Overall Score, Skill Fingerprint, Skill Evaluation, Job Role Probability, Salary Insights & Best Time to Switch as a PDF.
         </p>
       </div>
-      <Button variant="hero" onClick={handleDownload} disabled={isDownloading}>
+      <Button variant="hero" className="rounded-none" onClick={handleDownload} disabled={isDownloading}>
         {isDownloading ? (
           <>
             <Loader2 className="w-4 h-4 animate-spin" />

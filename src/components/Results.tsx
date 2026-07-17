@@ -126,7 +126,7 @@ const Results = ({ results, onRestart, parsedResume }: ResultsProps) => {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-secondary/10 border border-secondary/20 rounded-xl p-4 mb-8 flex items-center justify-between flex-wrap gap-4"
+              className="bg-secondary/10 border border-secondary/20 rounded-none p-4 mb-8 flex items-center justify-between flex-wrap gap-4"
             >
               <div>
                 <h4 className="font-medium text-foreground">
@@ -136,7 +136,7 @@ const Results = ({ results, onRestart, parsedResume }: ResultsProps) => {
                   Track your career progress and access your assessment history anytime
                 </p>
               </div>
-              <Button variant="hero" onClick={saveResults} disabled={isSaving}>
+              <Button variant="hero" className="rounded-none" onClick={saveResults} disabled={isSaving}>
                 {isSaving ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : (
@@ -153,14 +153,14 @@ const Results = ({ results, onRestart, parsedResume }: ResultsProps) => {
             <motion.div
               initial={{ opacity: 0, y: -10 }}
               animate={{ opacity: 1, y: 0 }}
-              className="bg-success/10 border border-success/20 rounded-xl p-4 mb-8 flex items-center justify-between flex-wrap gap-4"
+              className="bg-success/10 border border-success/20 rounded-none p-4 mb-8 flex items-center justify-between flex-wrap gap-4"
             >
               <div>
                 <h4 className="font-medium text-foreground">Results saved successfully!</h4>
                 <p className="text-sm text-muted-foreground">View all your assessments in your dashboard</p>
               </div>
               <Link to="/dashboard">
-                <Button variant="success">
+                <Button variant="success" className="rounded-none">
                   Go to Dashboard
                   <ArrowRight className="w-4 h-4" />
                 </Button>
