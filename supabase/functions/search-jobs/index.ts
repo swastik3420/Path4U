@@ -733,7 +733,7 @@ serve(async (req) => {
     const buckets = new Map<string, any[]>();
     for (const r of roleOrder) buckets.set(r, []);
     buckets.set('__other__', []);
-    for (const j of liveJobs.sort((a: any, b: any) => (b.match || 0) - (a.match || 0))) {
+    for (const j of liveJobs.sort((a: any, b: any) => ((b.match || 0) + Math.random() * 6) - ((a.match || 0) + Math.random() * 6))) {
       const key = roleOrder.includes(j._forRole) ? j._forRole : '__other__';
       buckets.get(key)!.push(j);
     }
