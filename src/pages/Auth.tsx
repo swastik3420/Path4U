@@ -161,7 +161,7 @@ const Auth = () => {
                     placeholder="John Doe"
                     value={fullName}
                     onChange={(e) => setFullName(e.target.value)}
-                    className={`pl-10 ${errors.fullName ? 'border-destructive' : ''}`}
+                    className={`pl-10 rounded-none ${errors.fullName ? 'border-destructive' : ''}`}
                     disabled={isSubmitting}
                   />
                 </div>
