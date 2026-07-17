@@ -22,15 +22,9 @@ const SplashScreen = () => {
 
   if (done) return null;
 
-  const skip = () => {
-    sessionStorage.setItem(SESSION_KEY, "1");
-    setDone(true);
-  };
-
   return (
     <div
-      onClick={skip}
-      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background cursor-pointer transition-colors duration-700"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-background transition-colors duration-700"
     >
       <div key={phase} className="flex flex-col items-center animate-in fade-in zoom-in duration-700 px-4 text-center">
         {phase === 0 ? (
@@ -57,7 +51,6 @@ const SplashScreen = () => {
           </>
         )}
         <Loader2 className="h-12 w-12 md:h-16 md:w-16 animate-spin text-muted-foreground mt-4" />
-        <p className="text-xs text-muted-foreground mt-6 opacity-60">click anywhere to skip</p>
       </div>
     </div>
   );
