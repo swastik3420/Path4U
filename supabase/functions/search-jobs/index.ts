@@ -652,7 +652,7 @@ serve(async (req) => {
       });
 
       // Keep more candidates now that we search across many roles.
-      const candidates = deduped.sort((a, b) => b.match - a.match).slice(0, 40);
+      const candidates = deduped.sort((a, b) => (b.match + Math.random() * 6) - (a.match + Math.random() * 6)).slice(0, 40);
       const aliveFlags = await Promise.all(candidates.map(j => isLinkAlive(j.url)));
       liveJobs = candidates
         .filter((_, i) => aliveFlags[i])
