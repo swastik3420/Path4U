@@ -183,7 +183,7 @@ const Results = ({ results, onRestart, parsedResume }: ResultsProps) => {
           </div>
 
           {/* Row 1: Overall Score + Skill Fingerprint */}
-          <div className="grid lg:grid-cols-3 gap-12 mb-8">
+          <div className="grid lg:grid-cols-3 gap-x-12 gap-y-16 mb-8">
             {/* Overall Score Card */}
             <motion.div
               id="pdf-overall-score"
