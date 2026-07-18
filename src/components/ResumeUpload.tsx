@@ -353,10 +353,10 @@ const ResumeUpload = ({ onFileUploaded, onStartAssessment, onResumeAnalyzed }: R
               className="mt-6 text-center space-y-3"
             >
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                <Button variant="hero" size="lg" onClick={() => handleStart("full")}>
+                <Button variant="hero" size="lg" className="rounded-none" onClick={() => handleStart("full")}>
                   Start Full Assessment (30 Q)
                 </Button>
-                <Button variant="outline" size="lg" onClick={() => handleStart("demo")}>
+                <Button variant="outline" size="lg" className="rounded-none" onClick={() => handleStart("demo")}>
                   Try Demo Mode (5 Q)
                 </Button>
               </div>
