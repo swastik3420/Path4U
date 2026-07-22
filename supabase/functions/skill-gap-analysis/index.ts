@@ -33,29 +33,16 @@ serve(async (req) => {
     const boundedTarget = targetRole.slice(0, 150);
     const boundedExperience = typeof experienceLevel === 'string' ? experienceLevel.slice(0, 100) : 'Unknown';
 
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
-    if (!LOVABLE_API_KEY) {
+    const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
+    if (!GEMINI_API_KEY) {
       return new Response(JSON.stringify({ error: 'AI service not configured' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const skillList = boundedSkills.map((s: any) => `${s.name} (${s.score}%, ${s.level})`).join(', ');
 
-    const response = await fetch('https://ai.gateway.lovable.dev/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${LOVABLE_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'google/gemini-3-flash-preview',
-        messages: [
-          {
-            role: 'system',
-            content: `You are a career coach performing a skill gap analysis. Given the candidate's current skills and a target job role, identify the skills they already have, the skills they are missing or weak in, and estimate the realistic time to close the gap. Be specific and actionable.`
-          },
-          {
-            role: 'user',
-            content: `Candidate current skills: ${skillList}
+    const systemInstruction = `You are a career coach performing a skill gap analysis. Given the candidate's current skills and a target job role, identify the skills they already have, the skills they are missing or weak in, and estimate the realistic time to close the gap. Be specific and actionable.`;
+
+    const userPrompt = `Candidate current skills: ${skillList}
 Candidate experience level: ${boundedExperience}
 Target role: ${boundedTarget}
 
@@ -68,16 +55,21 @@ Return ONLY a JSON object of this shape:
   "missingSkills": [{"name": "Skill", "priority": "high|medium|low", "estimatedWeeks": number, "reason": "why needed"}],
   "recommendedPath": ["Step 1", "Step 2", "Step 3", "Step 4"]
 }
-Limit matchedSkills to 6, missingSkills to 6, recommendedPath to 5.`
-          }
-        ],
-        temperature: 0.4,
+Limit matchedSkills to 6, missingSkills to 6, recommendedPath to 5.`;
+
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: systemInstruction }] },
+        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+        generationConfig: { temperature: 0.4, responseMimeType: 'application/json' },
       }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('AI error:', response.status, errorText);
+      console.error('Gemini error:', response.status, errorText);
       if (response.status === 429) {
         return new Response(JSON.stringify({ error: 'Rate limited' }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
       }
@@ -85,7 +77,7 @@ Limit matchedSkills to 6, missingSkills to 6, recommendedPath to 5.`
     }
 
     const data = await response.json();
-    const content = data.choices?.[0]?.message?.content || '';
+    const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     let parsed;
     try {
