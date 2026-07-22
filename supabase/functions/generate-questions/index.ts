@@ -102,7 +102,45 @@ async function callGemini(system: string, user: string): Promise<any> {
   const data = await res.json();
   const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
   if (!content) throw new Error('Empty Gemini response');
-  return JSON.parse(content);
+  return safeParseJson(content);
+}
+
+function safeParseJson(raw: string): any {
+  let s = raw.trim();
+  // Strip markdown fences if present
+  const fence = s.match(/```(?:json)?\s*([\s\S]*?)\s*```/);
+  if (fence) s = fence[1].trim();
+  // Extract the outermost { ... }
+  const first = s.indexOf('{');
+  const last = s.lastIndexOf('}');
+  if (first !== -1 && last !== -1 && last > first) s = s.slice(first, last + 1);
+
+  try { return JSON.parse(s); } catch (_) {}
+
+  // Repair pass: fix common LLM JSON issues
+  let repaired = s
+    // Remove trailing commas before } or ]
+    .replace(/,(\s*[}\]])/g, '$1')
+    // Escape stray control chars inside strings by replacing raw newlines/tabs
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '');
+
+  try { return JSON.parse(repaired); } catch (_) {}
+
+  // Last resort: try to salvage the questions array by parsing individual objects
+  try {
+    const questions: any[] = [];
+    const objRegex = /\{[^{}]*"question"[\s\S]*?"explanation"[\s\S]*?\}/g;
+    const matches = repaired.match(objRegex) || [];
+    for (const m of matches) {
+      try {
+        const fixed = m.replace(/,(\s*[}\]])/g, '$1');
+        questions.push(JSON.parse(fixed));
+      } catch { /* skip */ }
+    }
+    if (questions.length > 0) return { questions };
+  } catch (_) {}
+
+  throw new Error('Failed to parse Gemini JSON response');
 }
 
 function buildPlan(skills: string[], total: number): { skill: string; difficulty: Difficulty }[] {
