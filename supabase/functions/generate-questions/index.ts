@@ -27,17 +27,20 @@ function buildSystemPrompt(): string {
 
 DIFFICULTY CALIBRATION — each question MUST match its assigned tier exactly. Do not leak hard edge cases into Basic slots, and do not waste Advanced slots on trivia.
 
-BASIC (Difficulty 1-2):
-- Focus strictly on fundamental concepts, standard syntax, default behaviors, and daily usage.
-- Test core understanding: "What happens when you run this common code?", "Which API is the standard/default choice for this everyday task?", "What is the correct syntax for this basic pattern?"
-- NO trick scenarios, NO deep edge cases, NO architectural trade-offs, NO performance optimization dilemmas.
-- Distractors must reflect standard syntax errors, common logic mistakes, or misremembered defaults — the kinds of mistakes a junior developer actually makes.
+BASIC (Difficulty 1-2) — BEGINNER / ENTRY-LEVEL ONLY:
+- Test fundamental definitions, core concepts, basic terminology, and keyword/syntax recognition ONLY.
+- Simple recall and recognition questions are ENCOURAGED at this tier: "What is X?", "Which keyword is used for Y?", "What does Z do?", "Which of these is a valid A?" are all acceptable and expected.
+- NO multi-step scenarios. NO edge cases. NO complex or multi-line code snippets (a single short line is OK). NO trade-off analysis. NO debugging scenarios. NO performance discussions.
+- Target audience: someone who just finished a beginner tutorial or intro course. If a junior dev with 0-6 months experience would struggle, it does NOT belong in Basic.
+- Distractors must be obvious-to-an-expert but plausible-to-a-beginner: wrong keywords, wrong syntax, confused terminology, or mixing up two similar basic concepts.
 
-INTERMEDIATE (Difficulty 3-4):
-- Focus on practical application, standard error handling, and real-world trade-offs between two reasonable options.
-- Include common design patterns, moderate performance optimization, multi-feature interactions, and debugging scenarios that require connecting two concepts.
-- Distractors should represent plausible anti-patterns, off-by-one mistakes, ordering issues, or "sounds right but subtly wrong" reasoning.
-- Avoid internals, deep engine mechanics, or large-scale distributed-system edge cases.
+INTERMEDIATE (Difficulty 3-4) — STANDARD 1-3 YEAR DEVELOPER INTERVIEW:
+- Calibrate to what a typical 1-3 year developer is expected to know in a standard industry interview.
+- Focus on practical day-to-day usage, common real-world edge cases developers actually hit, standard best practices, and idiomatic patterns.
+- Include: correct API/method choice for a common task, standard error handling, common pitfalls (null/undefined, async ordering, off-by-one), typical design patterns, straightforward debugging.
+- Should cleanly bridge Basic (definitions) and Advanced (deep internals/scale). Not trivia, not architecture.
+- Distractors should be plausible anti-patterns, "sounds right but subtly wrong" answers, or the mistake a dev makes before learning the idiomatic approach.
+- Avoid deep internals, framework source-level mechanics, distributed-systems edge cases, or high-concurrency scenarios — those belong in Advanced.
 
 ADVANCED (Difficulty 5):
 - Reserved strictly for deep architecture, internal mechanics, high-concurrency/edge cases, complex scale trade-offs, and subtle anti-patterns.
@@ -45,9 +48,9 @@ ADVANCED (Difficulty 5):
 - Distractors must be sophisticated: common misconceptions that even experienced engineers hold, or solutions that work in small cases but fail at scale or under concurrency.
 
 STRICT RULES — every question MUST comply:
-1. NEVER ask generic definition/recall questions. Ban "What is X?", "Define Y", "What does Z stand for?", "Which of these is X?", or any question answerable by reading a one-line docs blurb. However, Basic questions must remain accessible to a beginner or junior developer.
-2. Every question MUST be scenario-driven: a real engineering trade-off, a debugging situation, a performance/scaling bottleneck, an architectural decision, a subtle language/tool mechanic, an edge case, or a "why X over Y under constraint Z" comparison.
-3. Distractors MUST be plausible and tier-appropriate. Basic distractors = syntax/logic mistakes; Intermediate distractors = anti-patterns and subtle interactions; Advanced distractors = scale/concurrency/misconceptions.
+1. For INTERMEDIATE and ADVANCED tiers only: avoid generic definition/recall questions. Ban "What is X?", "Define Y", "What does Z stand for?" at those tiers. BASIC tier is EXEMPT — definition/recall/terminology questions are the required style for Basic.
+2. INTERMEDIATE and ADVANCED questions MUST be scenario-driven: a real engineering trade-off, debugging situation, performance/scaling bottleneck, architectural decision, subtle language/tool mechanic, edge case, or "why X over Y under constraint Z" comparison. BASIC questions must stay simple recall/recognition — no scenarios.
+3. Distractors MUST be plausible and tier-appropriate. Basic distractors = wrong keywords, wrong terminology, or confused basic concepts; Intermediate distractors = plausible anti-patterns and subtle interaction errors; Advanced distractors = scale/concurrency/misconceptions.
 4. Exactly 4 options. Exactly one unambiguously correct answer. correctAnswer is the 0-based index.
 5. The explanation MUST justify why the correct answer is right AND briefly say why each notable distractor is wrong / what misconception it targets.
 6. Question and options must be self-contained (no "see above", no code that can't fit inline). Short code snippets are welcome.
@@ -74,8 +77,8 @@ Slots:
 ${planLines}
 
 Difficulty calibration reminder:
-- Basic slots: fundamentals, syntax, defaults, daily usage. No tricks or deep edge cases.
-- Intermediate slots: practical application, error handling, real-world trade-offs, design patterns, moderate performance.
+- Basic slots: BEGINNER-only. Simple definitions, terminology, keyword recognition, "what is X" / "which keyword does Y". No scenarios, no code logic, no edge cases.
+- Intermediate slots: STANDARD 1-3 year dev interview level. Practical day-to-day usage, common real-world edge cases, standard best practices, idiomatic patterns, straightforward debugging. Bridge between Basic and Advanced.
 - Advanced slots: deep architecture, internals, high-concurrency/edge cases, scale trade-offs, subtle anti-patterns.
 
 Return JSON in this exact shape (no markdown, no prose, no trailing text):
@@ -256,10 +259,10 @@ serve(async (req) => {
       const auditSystem = `You are a Senior Technical Interviewer auditing an MCQ set for correctness, rigor, and difficulty calibration.
 For each question:
 - Verify the marked correctAnswer is factually correct. If wrong, fix correctAnswer OR rewrite options so exactly one is correct.
-- Reject and rewrite any generic definition/recall question into a scenario/edge-case question at the same difficulty and skill.
+- Reject and rewrite any generic definition/recall question at INTERMEDIATE or ADVANCED tiers into a scenario/edge-case question at the same difficulty and skill. Do NOT rewrite Basic definition questions — those are correct for the tier.
 - Enforce the difficulty tier strictly:
-  * Basic must test fundamentals, syntax, defaults, and daily usage with no deep edge cases or architectural trade-offs. Distractors must be standard syntax/logic mistakes.
-  * Intermediate must test practical application, error handling, real-world trade-offs between two options, design patterns, and moderate performance. Distractors must be plausible anti-patterns or subtle interaction errors.
+  * Basic must be BEGINNER-only: fundamental definitions, terminology, keyword recognition, single-concept recall. NO scenarios, NO multi-line code, NO edge cases, NO trade-offs. If a Basic question is too complex for someone who just finished an intro tutorial, simplify it into a definition/recognition question. Distractors must be wrong keywords, confused terminology, or mixed-up basic concepts.
+  * Intermediate must match a standard 1-3 year developer interview: practical day-to-day usage, common real-world edge cases devs actually hit, standard best practices, idiomatic patterns, straightforward debugging. Not trivia, not deep internals. Distractors must be plausible anti-patterns or "sounds right but subtly wrong" answers.
   * Advanced must test deep architecture, internals, high-concurrency/edge cases, scale trade-offs, and subtle anti-patterns. Distractors must be sophisticated misconceptions that experienced engineers could hold.
 - If a question is miscalibrated (too hard or too easy for its labeled difficulty), rewrite it to fit the tier.
 - Ensure explanations defend the correct answer and refute distractors clearly.
