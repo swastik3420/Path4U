@@ -217,6 +217,20 @@ function validateQuestions(raw: any, plan: { skill: string; difficulty: Difficul
   return out;
 }
 
+function shuffleAnswers(questions: GeneratedQuestion[]): GeneratedQuestion[] {
+  return questions.map((q) => {
+    const indices = [0, 1, 2, 3];
+    // Fisher-Yates shuffle
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    const newOptions = indices.map((oldIdx) => q.options[oldIdx]);
+    const newCorrect = indices.indexOf(q.correctAnswer);
+    return { ...q, options: newOptions, correctAnswer: newCorrect };
+  });
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response(null, { headers: corsHeaders });
 
