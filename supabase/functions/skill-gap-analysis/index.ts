@@ -57,23 +57,60 @@ Return ONLY a JSON object of this shape:
 }
 Limit matchedSkills to 6, missingSkills to 6, recommendedPath to 5.`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: systemInstruction }] },
-        contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-        generationConfig: { temperature: 0.4, responseMimeType: 'application/json' },
-      }),
-    });
+    const buildFallback = () => {
+      const matched = boundedSkills
+        .filter((s: any) => (s.score || 0) >= 60)
+        .sort((a: any, b: any) => (b.score || 0) - (a.score || 0))
+        .slice(0, 6)
+        .map((s: any) => ({ name: s.name, score: s.score || 0 }));
+      const weak = boundedSkills
+        .filter((s: any) => (s.score || 0) < 60)
+        .sort((a: any, b: any) => (a.score || 0) - (b.score || 0))
+        .slice(0, 6)
+        .map((s: any, i: number) => ({
+          name: s.name,
+          priority: i < 2 ? 'high' : i < 4 ? 'medium' : 'low',
+          estimatedWeeks: 4 + i * 2,
+          reason: `Strengthen ${s.name} to meet ${boundedTarget} expectations.`,
+        }));
+      const readinessScore = Math.round(
+        boundedSkills.reduce((a: number, s: any) => a + (s.score || 0), 0) / Math.max(1, boundedSkills.length)
+      );
+      const estimatedMonths = Math.max(1, Math.round(weak.reduce((a, s) => a + s.estimatedWeeks, 0) / 4));
+      return {
+        readinessScore,
+        estimatedMonths,
+        summary: `Estimated readiness for ${boundedTarget} based on your current skills (AI temporarily unavailable).`,
+        matchedSkills: matched,
+        missingSkills: weak,
+        recommendedPath: [
+          `Audit your current ${boundedTarget} knowledge gaps`,
+          `Build 1-2 portfolio projects targeting ${boundedTarget}`,
+          `Focus on the high-priority skills listed above`,
+          `Practice interview problems for ${boundedTarget}`,
+          `Apply and iterate based on feedback`,
+        ],
+      };
+    };
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Gemini error:', response.status, errorText);
-      if (response.status === 429) {
-        return new Response(JSON.stringify({ error: 'Rate limited' }), { status: 429, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
-      }
-      return new Response(JSON.stringify({ error: 'Failed to analyze gap' }), { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    let response: Response | null = null;
+    for (let attempt = 0; attempt < 3; attempt++) {
+      response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemInstruction }] },
+          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+          generationConfig: { temperature: 0.4, responseMimeType: 'application/json' },
+        }),
+      });
+      if (response.status !== 429 && response.status !== 503) break;
+      await new Promise(r => setTimeout(r, 800 * (attempt + 1)));
+    }
+
+    if (!response || !response.ok) {
+      console.error('Gemini error:', response?.status, await response?.text().catch(() => ''));
+      return new Response(JSON.stringify(buildFallback()), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
     }
 
     const data = await response.json();
