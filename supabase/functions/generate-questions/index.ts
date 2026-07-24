@@ -19,9 +19,8 @@ interface GeneratedQuestion {
 }
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-const MODEL_FALLBACKS = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
-const geminiUrl = (model: string) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
-
+const MODEL = 'gemini-3.5-flash';
+const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
 function buildSystemPrompt(): string {
   return `You are a Senior Principal Engineer and Technical Interviewer designing a high-signal MCQ assessment. Your job is to produce rigorous, scenario-calibrated questions that stay within their assigned difficulty band.
@@ -98,61 +97,36 @@ Return JSON in this exact shape (no markdown, no prose, no trailing text):
 }
 
 async function callGemini(system: string, user: string): Promise<any> {
-  let lastStatus = 0;
-  let lastBody = '';
+  const res = await fetch(`${GEMINI_URL}?key=${GEMINI_API_KEY}`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      systemInstruction: { parts: [{ text: system }] },
+      contents: [{ role: 'user', parts: [{ text: user }] }],
+      generationConfig: {
+        responseMimeType: 'application/json',
+        temperature: 0.7,
+      },
+    }),
+  });
 
-  for (let m = 0; m < MODEL_FALLBACKS.length; m++) {
-    const model = MODEL_FALLBACKS[m];
-    const maxAttempts = 3;
-
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      const res = await fetch(`${geminiUrl(model)}?key=${GEMINI_API_KEY}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: system }] },
-          contents: [{ role: 'user', parts: [{ text: user }] }],
-          generationConfig: {
-            responseMimeType: 'application/json',
-            temperature: 0.7,
-          },
-        }),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
-        if (!content) throw new Error('Empty Gemini response');
-        return safeParseJson(content);
-      }
-
-      lastStatus = res.status;
-      lastBody = await res.text();
-
-      const transient = res.status === 503 || res.status === 429 || res.status === 500;
-      if (!transient) break; // non-retryable: fail fast
-
-      if (attempt < maxAttempts) {
-        const delay = Math.min(6000, 700 * Math.pow(2, attempt - 1)) + Math.random() * 400;
-        await new Promise((r) => setTimeout(r, delay));
-      }
-    }
-    // After exhausting attempts on this model for a transient error, fall through to next model
+  if (!res.ok) {
+    const body = await res.text();
+    throw new Response(
+      JSON.stringify({
+        error: res.status === 429
+          ? 'Gemini rate limited. Please retry shortly.'
+          : `Gemini API error (${res.status}): ${body}`,
+      }),
+      { status: res.status, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+    );
   }
 
-  throw new Response(
-    JSON.stringify({
-      error: lastStatus === 429
-        ? 'Gemini is rate limited across fallback models. Please retry in a minute.'
-        : lastStatus === 503
-        ? 'Gemini is temporarily overloaded. Please try again shortly.'
-        : `Gemini API error (${lastStatus}): ${lastBody}`,
-    }),
-    { status: lastStatus || 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
-  );
+  const data = await res.json();
+  const content = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!content) throw new Error('Empty Gemini response');
+  return safeParseJson(content);
 }
-
-
 
 function safeParseJson(raw: string): any {
   let s = raw.trim();
@@ -211,100 +185,6 @@ function buildPlan(skills: string[], total: number): { skill: string; difficulty
     }
   });
   return plan;
-}
-
-function rotateAnswerIndex(seed: string, index: number): number {
-  let hash = index + 17;
-  for (let i = 0; i < seed.length; i++) {
-    hash = (hash * 31 + seed.charCodeAt(i)) % 9973;
-  }
-  return Math.abs(hash) % 4;
-}
-
-function placeCorrectAnswer(correct: string, distractors: string[], slot: number): { options: string[]; correctAnswer: number } {
-  const cleanedDistractors = distractors
-    .map((d) => d.trim())
-    .filter((d) => d && d.toLowerCase() !== correct.toLowerCase())
-    .slice(0, 3);
-
-  while (cleanedDistractors.length < 3) {
-    cleanedDistractors.push('A partially related concept that does not directly answer the question.');
-  }
-
-  const correctAnswer = rotateAnswerIndex(correct, slot);
-  const options: string[] = [];
-  let distractorIndex = 0;
-  for (let i = 0; i < 4; i++) {
-    options.push(i === correctAnswer ? correct : cleanedDistractors[distractorIndex++]);
-  }
-  return { options, correctAnswer };
-}
-
-function buildFallbackQuestion(slot: { skill: string; difficulty: Difficulty }, index: number): GeneratedQuestion {
-  const skill = slot.skill;
-  const lowerSkill = skill.toLowerCase();
-
-  if (slot.difficulty === 'Basic') {
-    const correct = `A core concept, tool, or practice used in ${skill}.`;
-    const { options, correctAnswer } = placeCorrectAnswer(correct, [
-      `A project management status unrelated to ${skill}.`,
-      `A hardware-only term with no direct connection to ${skill}.`,
-      `A random naming convention that does not describe ${skill}.`,
-    ], index);
-
-    return {
-      id: index + 1,
-      skill,
-      skillTested: skill,
-      difficulty: 'Basic',
-      question: `What best describes ${skill}?`,
-      options,
-      correctAnswer,
-      explanation: `${skill} is best understood as a core concept, tool, or practice in its domain. The other options are unrelated or confuse ${skill} with generic non-domain ideas.`,
-    };
-  }
-
-  if (slot.difficulty === 'Intermediate') {
-    const correct = `Clarify the requirement, choose the standard ${skill} approach, test the result, and document the trade-off.`;
-    const { options, correctAnswer } = placeCorrectAnswer(correct, [
-      `Use the most complex ${skill} technique immediately, even if the requirement is simple.`,
-      `Ignore validation and rely on manual review after release.`,
-      `Replace the existing workflow without checking compatibility or maintainability.`,
-    ], index);
-
-    return {
-      id: index + 1,
-      skill,
-      skillTested: skill,
-      difficulty: 'Intermediate',
-      question: `A team needs to apply ${skill} in a production task, but the requirement may change soon. What is the most practical first approach?`,
-      options,
-      correctAnswer,
-      explanation: `At an intermediate level, ${skill} should be applied with practical requirements, standard implementation, validation, and maintainability in mind. The distractors either over-engineer, skip validation, or introduce unnecessary replacement risk.`,
-    };
-  }
-
-  const correct = `Identify the constraint, evaluate failure modes at scale, choose a maintainable design, and add observability around the risky path.`;
-  const { options, correctAnswer } = placeCorrectAnswer(correct, [
-    `Optimize only for the happy path because advanced ${skill} issues are usually rare.`,
-    `Add more resources first without understanding bottlenecks or failure modes.`,
-    `Hide the complexity from monitoring so the system remains simpler to operate.`,
-  ], index);
-
-  return {
-    id: index + 1,
-    skill,
-    skillTested: skill,
-    difficulty: 'Advanced',
-    question: `A ${lowerSkill} implementation works in small tests but becomes unreliable under scale, concurrency, or edge-case pressure. What is the strongest engineering response?`,
-    options,
-    correctAnswer,
-    explanation: `Advanced ${skill} work requires reasoning about constraints, scale, failure modes, maintainability, and observability. The other options defer diagnosis, over-rely on capacity, or reduce visibility into the system.`,
-  };
-}
-
-function buildFallbackQuestions(plan: { skill: string; difficulty: Difficulty }[], startIndex = 0): GeneratedQuestion[] {
-  return plan.map((slot, i) => buildFallbackQuestion(slot, startIndex + i));
 }
 
 function validateQuestions(raw: any, plan: { skill: string; difficulty: Difficulty }[]): GeneratedQuestion[] {
@@ -384,21 +264,9 @@ serve(async (req) => {
     const plan = buildPlan(skillNames, totalQuestions);
     const context = typeof candidateContext === 'string' ? candidateContext.slice(0, 800) : '';
 
-    // Generation pass. If Gemini is rate-limited or overloaded across all fallback models,
-    // return a deterministic local assessment instead of failing the user's flow.
-    let questions: GeneratedQuestion[] = [];
-    try {
-      const genRaw = await callGemini(buildSystemPrompt(), buildUserPrompt(skillNames, plan, context));
-      questions = validateQuestions(genRaw, plan);
-    } catch (e) {
-      console.warn('Gemini generation unavailable, using local fallback questions:', e);
-      questions = buildFallbackQuestions(plan);
-    }
-
-    if (questions.length < plan.length) {
-      const missingPlan = plan.slice(questions.length);
-      questions = [...questions, ...buildFallbackQuestions(missingPlan, questions.length)];
-    }
+    // Generation pass
+    const genRaw = await callGemini(buildSystemPrompt(), buildUserPrompt(skillNames, plan, context));
+    let questions = validateQuestions(genRaw, plan);
 
     // Verification pass: Senior Technical Interviewer audits and fixes any weak or incorrect items.
     if (questions.length > 0) {
@@ -429,10 +297,6 @@ Return the FULL corrected set as JSON in the same schema.`;
       } catch (e) {
         console.warn('Audit pass failed, using generation output:', e);
       }
-    }
-
-    if (questions.length === 0) {
-      questions = buildFallbackQuestions(plan);
     }
 
     if (questions.length === 0) {
