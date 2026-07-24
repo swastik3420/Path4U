@@ -19,8 +19,9 @@ interface GeneratedQuestion {
 }
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
-const MODEL = 'gemini-3.5-flash';
-const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
+const MODEL_FALLBACKS = ['gemini-3.5-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite', 'gemini-2.0-flash'];
+const geminiUrl = (model: string) => `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
+
 
 function buildSystemPrompt(): string {
   return `You are a Senior Principal Engineer and Technical Interviewer designing a high-signal MCQ assessment. Your job is to produce rigorous, scenario-calibrated questions that stay within their assigned difficulty band.
