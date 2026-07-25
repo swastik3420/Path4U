@@ -104,7 +104,7 @@ Return JSON in this exact shape (no markdown, no prose, no trailing text):
 }
 
 async function callGemini(system: string, user: string): Promise<any> {
-  const maxAttempts = 4;
+  const maxAttempts = 2;
   let lastStatus = 0;
   let lastBody = '';
 
@@ -447,6 +447,7 @@ serve(async (req) => {
     // assessment usable with deterministic local questions instead of returning
     // a 429 that blanks the app.
     let questions: GeneratedQuestion[];
+    let usedFallback = false;
     try {
       const genRaw = await callGemini(buildSystemPrompt(), buildUserPrompt(skillNames, plan, context));
       questions = validateQuestions(genRaw, plan);
@@ -454,13 +455,14 @@ serve(async (req) => {
       if (e instanceof GeminiRateLimitError) {
         console.warn('Gemini rate limited after retries; using local fallback question generator');
         questions = buildFallbackQuestions(plan);
+        usedFallback = true;
       } else {
         throw e;
       }
     }
 
     // Verification pass: Senior Technical Interviewer audits and fixes any weak or incorrect items.
-    if (questions.length > 0) {
+    if (questions.length > 0 && !usedFallback) {
       const auditSystem = `You are a Senior Technical Interviewer auditing an MCQ set for correctness, rigor, and difficulty calibration.
 For each question:
 - Verify the marked correctAnswer is factually correct. If wrong, fix correctAnswer OR rewrite options so exactly one is correct.
