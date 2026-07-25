@@ -22,6 +22,13 @@ const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 const MODEL = 'gemini-3.5-flash';
 const GEMINI_URL = `https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`;
 
+class GeminiRateLimitError extends Error {
+  constructor(message = 'Gemini rate limited') {
+    super(message);
+    this.name = 'GeminiRateLimitError';
+  }
+}
+
 function buildSystemPrompt(): string {
   return `You are a Senior Principal Engineer and Technical Interviewer designing a high-signal MCQ assessment. Your job is to produce rigorous, scenario-calibrated questions that stay within their assigned difficulty band.
 
@@ -134,12 +141,12 @@ async function callGemini(system: string, user: string): Promise<any> {
     break;
   }
 
+  if (lastStatus === 429) {
+    throw new GeminiRateLimitError('Gemini rate limited after retries');
+  }
+
   throw new Response(
-    JSON.stringify({
-      error: lastStatus === 429
-        ? 'Gemini rate limited. Please retry shortly.'
-        : `Gemini API error (${lastStatus}): ${lastBody}`,
-    }),
+    JSON.stringify({ error: `Gemini API error (${lastStatus}): ${lastBody}` }),
     { status: lastStatus || 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
   );
 }
@@ -233,6 +240,162 @@ function validateQuestions(raw: any, plan: { skill: string; difficulty: Difficul
   return out;
 }
 
+function humanizeSkill(skill: string): string {
+  return skill
+    .replace(/[._-]+/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function fallbackQuestionForSlot(
+  slot: { skill: string; difficulty: Difficulty },
+  index: number,
+): GeneratedQuestion {
+  const skill = humanizeSkill(slot.skill || 'Core Skill');
+  const variants = index % 3;
+
+  if (slot.difficulty === 'Basic') {
+    const templates = [
+      {
+        question: `Which statement best describes the core purpose of ${skill}?`,
+        options: [
+          `It is used to solve domain-specific problems by applying its standard concepts and tools.`,
+          `It is only useful for documenting completed work and does not affect implementation decisions.`,
+          `It is mainly a replacement for all other engineering or business skills.`,
+          `It is used only after a product or system is already deployed.`
+        ],
+        explanation: `The correct answer identifies ${skill} as a practical domain capability. The distractors confuse it with documentation-only work, a universal replacement, or a late-stage-only activity.`,
+      },
+      {
+        question: `When learning ${skill}, what should a beginner focus on first?`,
+        options: [
+          `Fundamental terminology, standard workflows, and common daily-use concepts.`,
+          `Rare edge cases that only appear in high-scale production systems.`,
+          `Replacing every related tool with a custom-built alternative.`,
+          `Ignoring basic concepts and memorizing only interview trick questions.`
+        ],
+        explanation: `Beginners should first learn terminology, workflows, and common usage. Advanced edge cases, custom replacements, and trick-question memorization are poor foundations.`,
+      },
+      {
+        question: `Which kind of mistake is most common for a beginner using ${skill}?`,
+        options: [
+          `Confusing basic terminology or applying a standard concept in the wrong place.`,
+          `Designing a globally distributed architecture before understanding the basics.`,
+          `Optimizing for extreme scale before the workflow is correct.`,
+          `Debugging concurrency failures in a system they have not built.`
+        ],
+        explanation: `Beginner mistakes are usually terminology and basic application errors. The other choices describe advanced architecture, scale, or concurrency concerns.`,
+      },
+    ];
+    const t = templates[variants];
+    return {
+      id: index + 1,
+      skill,
+      skillTested: skill,
+      difficulty: slot.difficulty,
+      question: t.question,
+      options: t.options,
+      correctAnswer: 0,
+      explanation: t.explanation,
+    };
+  }
+
+  if (slot.difficulty === 'Intermediate') {
+    const templates = [
+      {
+        question: `A team is using ${skill} in a normal production workflow and sees inconsistent results between expected and actual output. What is the best first step?`,
+        options: [
+          `Reproduce the issue, inspect inputs and assumptions, then apply the standard debugging or validation workflow for ${skill}.`,
+          `Immediately rewrite the entire system around a different tool without isolating the cause.`,
+          `Ignore the inconsistency if the output appears correct in one sample case.`,
+          `Optimize performance first, before confirming the logic is correct.`
+        ],
+        explanation: `The practical intermediate approach is to reproduce, validate inputs, and debug systematically. Rewrites, ignoring evidence, or optimizing before correctness are common anti-patterns.`,
+      },
+      {
+        question: `When choosing between two common approaches in ${skill}, what should guide the decision in a 1–3 year developer workflow?`,
+        options: [
+          `Correctness, maintainability, team conventions, and the constraints of the current problem.`,
+          `Always choosing the newest tool even if the team cannot maintain it.`,
+          `Always choosing the most complex architecture to prepare for every possible future use case.`,
+          `Choosing whichever option avoids testing because it saves time initially.`
+        ],
+        explanation: `Intermediate decisions should balance correctness, maintainability, conventions, and constraints. Novelty, unnecessary complexity, and avoiding tests create long-term risk.`,
+      },
+      {
+        question: `A common ${skill} workflow works locally but fails when used by other team members. What is the most likely practical issue to investigate first?`,
+        options: [
+          `Differences in configuration, inputs, environment, versions, or assumptions between users.`,
+          `A deep compiler or runtime bug should be assumed before checking configuration.`,
+          `The team should skip the workflow entirely and manually patch every result.`,
+          `The failure can be ignored because local success proves the implementation is correct.`
+        ],
+        explanation: `Shared-workflow failures commonly come from configuration, input, environment, version, or assumption differences. Assuming deep platform bugs, manual patching, or ignoring the failure is unsafe.`,
+      },
+    ];
+    const t = templates[variants];
+    return {
+      id: index + 1,
+      skill,
+      skillTested: skill,
+      difficulty: slot.difficulty,
+      question: t.question,
+      options: t.options,
+      correctAnswer: 0,
+      explanation: t.explanation,
+    };
+  }
+
+  const templates = [
+    {
+      question: `A high-traffic system depends on ${skill}, and failures appear only under peak load. Which response best reflects advanced engineering judgment?`,
+      options: [
+        `Use observability and controlled load testing to isolate bottlenecks, validate resource limits, and choose targeted architectural changes.`,
+        `Add more complexity immediately without measuring where the bottleneck occurs.`,
+        `Assume the same solution that works for small inputs will scale linearly.`,
+        `Disable validation and safety checks first because they are always the main performance issue.`
+      ],
+      explanation: `Advanced work requires measurement, isolation, and targeted architecture changes. Blind complexity, linear-scaling assumptions, and removing safety checks are subtle but dangerous anti-patterns.`,
+    },
+    {
+      question: `In an advanced ${skill} design review, which concern is most important when moving from a prototype to large-scale production use?`,
+      options: [
+        `Failure modes, operational visibility, data or state consistency, maintainability, and scale limits.`,
+        `Only whether the prototype works once on a developer machine.`,
+        `Whether the implementation uses the maximum number of tools possible.`,
+        `Avoiding documentation so future changes are faster.`
+      ],
+      explanation: `Production design requires failure-mode analysis, visibility, consistency, maintainability, and scale planning. One-off prototype success, tool sprawl, and missing documentation are anti-patterns.`,
+    },
+    {
+      question: `A senior engineer notices that a ${skill}-based solution is correct in simple cases but degrades sharply with concurrency or scale. What is the best next step?`,
+      options: [
+        `Identify the underlying contention, complexity, state-management, or resource-boundary issue before redesigning the critical path.`,
+        `Treat the issue as impossible to solve because it does not appear in small test cases.`,
+        `Only add retries everywhere, even if the root cause is deterministic contention.`,
+        `Move the problem to another layer without changing the failing design assumption.`
+      ],
+      explanation: `The correct advanced response is to find the root cause in contention, complexity, state, or resource boundaries. Ignoring scale signals, blanket retries, or moving the issue elsewhere preserves the failure mode.`,
+    },
+  ];
+  const t = templates[variants];
+  return {
+    id: index + 1,
+    skill,
+    skillTested: skill,
+    difficulty: slot.difficulty,
+    question: t.question,
+    options: t.options,
+    correctAnswer: 0,
+    explanation: t.explanation,
+  };
+}
+
+function buildFallbackQuestions(plan: { skill: string; difficulty: Difficulty }[]): GeneratedQuestion[] {
+  return plan.map((slot, index) => fallbackQuestionForSlot(slot, index));
+}
+
 function shuffleAnswers(questions: GeneratedQuestion[]): GeneratedQuestion[] {
   return questions.map((q) => {
     const indices = [0, 1, 2, 3];
@@ -280,9 +443,21 @@ serve(async (req) => {
     const plan = buildPlan(skillNames, totalQuestions);
     const context = typeof candidateContext === 'string' ? candidateContext.slice(0, 800) : '';
 
-    // Generation pass
-    const genRaw = await callGemini(buildSystemPrompt(), buildUserPrompt(skillNames, plan, context));
-    let questions = validateQuestions(genRaw, plan);
+    // Generation pass. If Gemini quota/rate limits are exhausted, keep the
+    // assessment usable with deterministic local questions instead of returning
+    // a 429 that blanks the app.
+    let questions: GeneratedQuestion[];
+    try {
+      const genRaw = await callGemini(buildSystemPrompt(), buildUserPrompt(skillNames, plan, context));
+      questions = validateQuestions(genRaw, plan);
+    } catch (e) {
+      if (e instanceof GeminiRateLimitError) {
+        console.warn('Gemini rate limited after retries; using local fallback question generator');
+        questions = buildFallbackQuestions(plan);
+      } else {
+        throw e;
+      }
+    }
 
     // Verification pass: Senior Technical Interviewer audits and fixes any weak or incorrect items.
     if (questions.length > 0) {
