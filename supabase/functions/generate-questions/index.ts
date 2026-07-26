@@ -215,27 +215,32 @@ function validateQuestions(raw: any, plan: { skill: string; difficulty: Difficul
   const out: GeneratedQuestion[] = [];
   for (let i = 0; i < plan.length; i++) {
     const q = arr[i];
-    if (!q) continue;
-    const options = Array.isArray(q.options) ? q.options.map((o: any) => String(o)) : [];
-    const correct = Number(q.correctAnswer);
-    if (
-      typeof q.question !== 'string' ||
-      options.length !== 4 ||
-      !Number.isInteger(correct) ||
-      correct < 0 || correct > 3 ||
-      typeof q.explanation !== 'string'
-    ) continue;
-    const skill = String(q.skillTested || plan[i].skill);
-    out.push({
-      id: out.length + 1,
-      skill,
-      skillTested: skill,
-      difficulty: (['Basic', 'Intermediate', 'Advanced'].includes(q.difficulty) ? q.difficulty : plan[i].difficulty) as Difficulty,
-      question: q.question.trim(),
-      options,
-      correctAnswer: correct,
-      explanation: q.explanation.trim(),
-    });
+    const options = Array.isArray(q?.options) ? q.options.map((o: any) => String(o)) : [];
+    const correct = Number(q?.correctAnswer);
+    const valid = q &&
+      typeof q.question === 'string' &&
+      options.length === 4 &&
+      Number.isInteger(correct) &&
+      correct >= 0 && correct <= 3 &&
+      typeof q.explanation === 'string';
+    if (valid) {
+      const skill = String(q.skillTested || plan[i].skill);
+      out.push({
+        id: out.length + 1,
+        skill,
+        skillTested: skill,
+        difficulty: (['Basic', 'Intermediate', 'Advanced'].includes(q.difficulty) ? q.difficulty : plan[i].difficulty) as Difficulty,
+        question: q.question.trim(),
+        options,
+        correctAnswer: correct,
+        explanation: q.explanation.trim(),
+      });
+    } else {
+      // Backfill missing/invalid item with a deterministic fallback so the
+      // final count always matches the planned total (e.g. 30 questions).
+      const fb = fallbackQuestionForSlot(plan[i], out.length);
+      out.push({ ...fb, id: out.length + 1 });
+    }
   }
   return out;
 }
