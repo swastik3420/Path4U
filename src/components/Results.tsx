@@ -110,7 +110,7 @@ const Results = ({ results, onRestart, parsedResume }: ResultsProps) => {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
           >
-            <div className="inline-flex items-center justify-center w-20 h-20 gradient-primary rounded-2xl mb-6">
+            <div className="inline-flex items-center justify-center w-20 h-20 gradient-primary rounded-none mb-6">
               <Award className="w-10 h-10 text-primary-foreground" />
             </div>
             <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4">
